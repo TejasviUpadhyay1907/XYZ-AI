@@ -167,7 +167,7 @@ class VoiceServiceImpl implements VoiceService {
     return this.isSpeakingFlag;
   }
 
-  setStateChangeCallback(callback: (event: string) => void) {
+  setStateChangeCallback(callback: ((event: string) => void) | null) {
     this.stateChangeCallback = callback;
   }
 }
