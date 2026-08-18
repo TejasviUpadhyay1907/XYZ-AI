@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bot, LogOut, User, Users, GraduationCap, Briefcase, Globe, Activity } from 'lucide-react';
+import { Bot, LogOut, User, Users, GraduationCap, Briefcase, Globe, Activity, LayoutDashboard } from 'lucide-react';
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
 import { getSupportedLanguages, detectLanguage, saveLanguagePreference, getLanguageDirection, type SupportedLanguage } from '../services/languageService';
@@ -91,6 +91,13 @@ export function Header() {
         {/* Logout */}
         {token && (
           <>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              title="Dashboard"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+            </button>
             {displayRole === 'principal' && (
               <button
                 onClick={() => navigate('/admin')}

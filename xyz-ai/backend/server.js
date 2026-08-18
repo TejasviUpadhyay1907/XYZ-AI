@@ -36,6 +36,7 @@ app.use(observabilityMiddleware);
 const apiRoutes = require('./src/routes/api');
 const authRoutes = require('./src/routes/auth');
 const { adminRouter } = require('./src/routes/admin');
+const dashboardRoutes = require('./src/routes/dashboard');
 
 // Serve static files from the React frontend build
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
@@ -45,6 +46,9 @@ app.use('/api/auth', authRoutes);
 
 // Admin routes (authenticated, principal only enforced inside) - must be before general /api
 app.use('/api/admin', authenticateToken, adminRouter);
+
+// Dashboard routes (authenticated)
+app.use('/api/dashboard', authenticateToken, dashboardRoutes);
 
 // Authenticated API routes
 app.use('/api', authenticateToken, apiRoutes);
