@@ -1,16 +1,36 @@
 /**
- * LLM Service - Groq Integration with Function Calling
- * Provides natural language understanding and generation via Groq's API.
+ * LLM Service - OpenRouter Integration with Function Calling
+ * Provides natural language understanding and generation via OpenRouter's API.
+ * OpenRouter is OpenAI-compatible, so we use the openai SDK with a custom baseURL.
  */
 
-const Groq = require('groq-sdk');
+const MODEL = 'meta-llama/llama-3.3-70b-instruct';
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
-});
+// OpenRouter uses the OpenAI-compatible API format
+const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
-// Model to use - llama-3.3-70b-versatile supports function calling well
-const MODEL = 'llama-3.3-70b-versatile';
+/**
+ * Make a chat completion request to OpenRouter
+ */
+async function openRouterRequest(body) {
+  const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      'HTTP-Referer': 'http://localhost:3000',
+      'X-Title': 'XYZ AI School Assistant'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`${response.status} ${errorText}`);
+  }
+
+  return response.json();
+}
 
 /**
  * Get the system prompt for a given role and language
@@ -213,19 +233,23 @@ async function chat(messages, role, language) {
     ...messages
   ];
 
-  try {
-    const response = await groq.chat.completions.create({
-      model: MODEL,
-      messages: fullMessages,
-      tools: tools.length > 0 ? tools : undefined,
-      tool_choice: tools.length > 0 ? 'auto' : undefined,
-      temperature: 0.7,
-      max_tokens: 1024
-    });
+  const body = {
+    model: MODEL,
+    messages: fullMessages,
+    temperature: 0.7,
+    max_tokens: 1024
+  };
 
-    return response.choices[0].message;
+  if (tools.length > 0) {
+    body.tools = tools;
+    body.tool_choice = 'auto';
+  }
+
+  try {
+    const data = await openRouterRequest(body);
+    return data.choices[0].message;
   } catch (error) {
-    console.error('[LLMService] Groq API error:', error.message);
+    console.error('[LLMService] OpenRouter API error:', error.message);
     throw error;
   }
 }
@@ -246,18 +270,22 @@ async function chatWithToolResults(messages, role, language) {
     ...messages
   ];
 
-  try {
-    const response = await groq.chat.completions.create({
-      model: MODEL,
-      messages: fullMessages,
-      tools: tools.length > 0 ? tools : undefined,
-      temperature: 0.7,
-      max_tokens: 1024
-    });
+  const body = {
+    model: MODEL,
+    messages: fullMessages,
+    temperature: 0.7,
+    max_tokens: 1024
+  };
 
-    return response.choices[0].message;
+  if (tools.length > 0) {
+    body.tools = tools;
+  }
+
+  try {
+    const data = await openRouterRequest(body);
+    return data.choices[0].message;
   } catch (error) {
-    console.error('[LLMService] Groq API error (tool results):', error.message);
+    console.error('[LLMService] OpenRouter API error (tool results):', error.message);
     throw error;
   }
 }
