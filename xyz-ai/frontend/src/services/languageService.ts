@@ -242,8 +242,21 @@ export const translate = (key: string, language: SupportedLanguage = 'en'): stri
       kn: 'ನಾನು எníkು ಸಹಾಯ ಮಾಡಬಲ್ಲีก؟',
       ml: 'എനിക്ക് എങ്ങനെ സഹായിക്കാൻ കഴിയും?',
       ur: 'میں کیسے مدد کر سکتا ہوں؟'
-    }
-  };
+    },
+  // Welcome messages for each role
+  'welcome_student': {
+    en: `Hello! I'm your Academic Assistant. I can help you with:\n\n• Attendance records\n• Class schedules\n• Homework help\n• Exam preparation\n• General school questions\n\nWhat would you like to know about?`
+  },
+  'welcome_parent': {
+    en: `Hello! I'm your Academic Assistant. I can help you with:\n\n• Your child's attendance records\n• Class schedules\n• Homework help\n• Exam preparation\n• General school questions\n\nWhat would you like to know about?`
+  },
+  'welcome_teacher': {
+    en: `Hello! I'm your Academic Assistant. I can help you with:\n\n• Attendance tracking\n• Lesson planning\n• Student performance insights\n• Curriculum resources\n• General school questions\n\nWhat would you like to know about?`
+  },
+  'welcome_principal': {
+    en: `Hello! I'm your Academic Assistant. I can help you with:\n\n• School-wide attendance analytics\n• Performance reports\n• Resource allocation\n• Staff management\n• General school questions\n\nWhat would you like to know about?`
+  }
+};
 
   // Return translation if available, otherwise fallback to English
   const translation = translations[key]?.[language];

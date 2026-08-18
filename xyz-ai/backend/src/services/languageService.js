@@ -372,6 +372,19 @@ What would you like to know about?`,
 
 آپ کیا جاننا چاہتے ہیں؟`
   },
+  // Welcome messages for each role (English only for now - can be expanded)
+  'welcome_student': {
+    en: `Hello! I'm your Academic Assistant. I can help you with:\n\n• Attendance records\n• Class schedules\n• Homework help\n• Exam preparation\n• General school questions\n\nWhat would you like to know about?`
+  },
+  'welcome_parent': {
+    en: `Hello! I'm your Academic Assistant. I can help you with:\n\n• Your child's attendance records\n• Class schedules\n• Homework help\n• Exam preparation\n• General school questions\n\nWhat would you like to know about?`
+  },
+  'welcome_teacher': {
+    en: `Hello! I'm your Academic Assistant. I can help you with:\n\n• Attendance tracking\n• Lesson planning\n• Student performance insights\n• Curriculum resources\n• General school questions\n\nWhat would you like to know about?`
+  },
+  'welcome_principal': {
+    en: `Hello! I'm your Academic Assistant. I can help you with:\n\n• School-wide attendance analytics\n• Performance reports\n• Resource allocation\n• Staff management\n• General school questions\n\nWhat would you like to know about?`
+  },
   // Attendance specific
   'attendance_information': {
     en: `Hello! Here's your attendance information:`,
