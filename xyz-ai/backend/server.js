@@ -7,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 
 const { initializeDatabase } = require('./db/init');
 const { authenticateToken, requireRole } = require('./src/middleware/auth');
+const { observabilityMiddleware } = require('./src/middleware/observability');
 
 dotenv.config();
 initializeDatabase();
@@ -28,15 +29,22 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// Observability - request IDs + latency tracking
+app.use(observabilityMiddleware);
+
 // Import routes
 const apiRoutes = require('./src/routes/api');
 const authRoutes = require('./src/routes/auth');
+const { adminRouter } = require('./src/routes/admin');
 
 // Serve static files from the React frontend build
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 // Auth routes (unprotected)
 app.use('/api/auth', authRoutes);
+
+// Admin routes (authenticated, principal only enforced inside) - must be before general /api
+app.use('/api/admin', authenticateToken, adminRouter);
 
 // Authenticated API routes
 app.use('/api', authenticateToken, apiRoutes);

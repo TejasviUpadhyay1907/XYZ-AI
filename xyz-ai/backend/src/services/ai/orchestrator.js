@@ -14,6 +14,7 @@ const LLMService = require('./LLMService');
 const AttendanceService = require('../../mockServices/attendanceService');
 const StudentService = require('../../mockServices/studentService');
 const EscalationService = require('../../mockServices/escalationService');
+const AuditService = require('../auditService');
 
 /**
  * @typedef {Object} ChatInput
@@ -246,19 +247,41 @@ function executeTool(toolName, args, context) {
 /**
  * Handles a chat message using the LLM
  * @param {ChatInput} input
+ * @param {Object} [reqContext] - Optional request context from middleware (requestId, logger)
  * @returns {Promise<ChatOutput>}
  */
-async function handleMessage(input) {
+async function handleMessage(input, reqContext = {}) {
   const { sessionId, userId, role, language, message } = input;
+  const requestId = reqContext.requestId || `req_${Date.now()}`;
+  const traceStartTime = Date.now();
+
+  // Build trace object that will be returned with the response
+  const trace = {
+    request_id: requestId,
+    user_id: userId,
+    role,
+    language,
+    steps: [],
+    tool_calls: [],
+    total_duration_ms: 0
+  };
+
+  function traceStep(name, data = {}) {
+    trace.steps.push({
+      step: name,
+      elapsed_ms: Date.now() - traceStartTime,
+      ...data
+    });
+  }
 
   // Get or create conversation session
+  traceStep('session_init');
   const session = ConversationService.getOrCreateSession(userId, role, language, sessionId);
 
   // Get conversation history and format for LLM
   const history = ConversationService.getRecentHistory(session.id, 10);
   const llmMessages = [];
 
-  // Convert history to LLM message format
   if (history && history.length > 0) {
     for (const msg of history) {
       if (msg.sender === 'user') {
@@ -269,11 +292,9 @@ async function handleMessage(input) {
     }
   }
 
-  // Add current user message
   llmMessages.push({ role: 'user', content: message });
-
-  // Save user message to DB
   ConversationService.addMessage(session.id, 'user', message);
+  traceStep('context_loaded', { history_messages: history?.length || 0 });
 
   let reply = '';
   let suggestedFollowUps = [];
@@ -281,8 +302,9 @@ async function handleMessage(input) {
 
   try {
     // Call LLM
+    const llmStartTime = Date.now();
     let llmResponse = await LLMService.chat(llmMessages, role, language);
-    console.log('[Orchestrator] LLM response:', JSON.stringify(llmResponse, null, 2));
+    traceStep('llm_call', { duration_ms: Date.now() - llmStartTime, has_tool_calls: !!(llmResponse.tool_calls?.length) });
 
     // Handle tool calls (may be multiple rounds)
     let iterations = 0;
@@ -290,12 +312,8 @@ async function handleMessage(input) {
 
     while (llmResponse.tool_calls && llmResponse.tool_calls.length > 0 && iterations < MAX_ITERATIONS) {
       iterations++;
-      console.log(`[Orchestrator] Processing ${llmResponse.tool_calls.length} tool call(s), iteration ${iterations}`);
-
-      // Add assistant message with tool calls to conversation
       llmMessages.push(llmResponse);
 
-      // Execute each tool call
       for (const toolCall of llmResponse.tool_calls) {
         const toolName = toolCall.function.name;
         let toolArgs = {};
@@ -303,17 +321,39 @@ async function handleMessage(input) {
         try {
           toolArgs = JSON.parse(toolCall.function.arguments);
         } catch (e) {
-          console.error('[Orchestrator] Failed to parse tool args:', toolCall.function.arguments);
+          // noop
         }
 
-        console.log(`[Orchestrator] Executing tool: ${toolName}`, toolArgs);
-
+        const toolStartTime = Date.now();
         const context = { userId, role, sessionId: session.id };
         const toolResult = executeTool(toolName, toolArgs, context);
+        const toolDuration = Date.now() - toolStartTime;
 
-        console.log(`[Orchestrator] Tool result:`, toolResult);
+        // Record in trace
+        const toolTrace = {
+          tool: toolName,
+          args: toolArgs,
+          duration_ms: toolDuration,
+          result_preview: toolResult.substring(0, 200)
+        };
+        trace.tool_calls.push(toolTrace);
+        traceStep('tool_executed', toolTrace);
 
-        // Add tool result to messages
+        // Audit log the tool call
+        try {
+          AuditService.logToolCall({
+            requestId,
+            userId,
+            role,
+            toolName,
+            args: toolArgs,
+            result: toolResult.includes('"error"') ? 'error' : 'success',
+            durationMs: toolDuration
+          });
+        } catch (auditErr) {
+          // Don't let audit failures break the flow
+        }
+
         llmMessages.push({
           role: 'tool',
           tool_call_id: toolCall.id,
@@ -322,20 +362,18 @@ async function handleMessage(input) {
       }
 
       // Call LLM again with tool results
+      const llm2StartTime = Date.now();
       llmResponse = await LLMService.chatWithToolResults(llmMessages, role, language);
-      console.log('[Orchestrator] LLM response after tools:', JSON.stringify(llmResponse, null, 2));
+      traceStep('llm_tool_response', { duration_ms: Date.now() - llm2StartTime });
     }
 
     // Extract final text reply
     reply = llmResponse.content || "I'm sorry, I couldn't process that request. Could you try rephrasing?";
-
-    // Generate follow-up suggestions based on role
     suggestedFollowUps = generateSuggestedFollowUps(role, message, reply);
+    traceStep('response_generated');
 
   } catch (error) {
-    console.error('[Orchestrator] Error:', error.message);
-
-    // Fallback response if LLM fails
+    traceStep('error', { message: error.message });
     reply = getFallbackResponse(role, language);
     suggestedFollowUps = getDefaultFollowUps(role);
   }
@@ -346,11 +384,15 @@ async function handleMessage(input) {
     needsClarification
   });
 
+  trace.total_duration_ms = Date.now() - traceStartTime;
+  traceStep('complete');
+
   return {
     reply,
     suggestedFollowUps,
     needsClarification,
-    sessionId: session.id
+    sessionId: session.id,
+    trace
   };
 }
 

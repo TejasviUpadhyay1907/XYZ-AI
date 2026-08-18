@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { handleMessage } = require('../services/ai/orchestrator');
 const inputGuard = require('../middleware/inputGuard');
+const { storeTrace } = require('../routes/admin');
 
 // POST /api/chat - uses authenticated user from JWT token
 router.post('/chat', inputGuard, async (req, res) => {
@@ -25,7 +26,13 @@ router.post('/chat', inputGuard, async (req, res) => {
       message
     };
 
-    const output = await handleMessage(input);
+    const output = await handleMessage(input, { requestId: req.requestId });
+
+    // Store trace for admin panel
+    if (output.trace) {
+      storeTrace(output.trace);
+    }
+
     res.json(output);
   } catch (error) {
     console.error('Error in chat endpoint:', error);

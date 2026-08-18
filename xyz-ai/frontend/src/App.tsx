@@ -6,6 +6,7 @@ import { ChatInput } from './components/ChatInput';
 import { PrivateRoute } from './components/PrivateRoute';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { AdminPanel } from './pages/AdminPanel';
 import { Avatar } from './components/Avatar';
 import { useChatStore } from './store/chatStore';
 import { voiceService } from './services/voiceService';
@@ -86,6 +87,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route element={<PrivateRoute />}>
             <Route path="/" element={<ChatLayout />} />
+            <Route path="/admin" element={<AdminPanel />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
