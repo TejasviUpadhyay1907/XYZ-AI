@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+xyz-ai/backend/node_modules/
+xyz-ai/frontend/node_modules/
+
+# Build output
+xyz-ai/frontend/dist/
+
+# Environment files
+.env
+xyz-ai/backend/.env
+
+# Database
+xyz-ai/backend/db/school.db
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+xyz-ai/backend/server.log
+xyz-ai/backend/server.pid
+
+# Claude
+.claude/
