@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   GraduationCap, Users, User, CheckCircle, TrendingUp,
   MessageCircle, Bell, Calendar, FileText, Send, Clock, Lightbulb,
-  AlertTriangle, Star, ArrowRight
+  AlertTriangle, Star, ArrowRight, Award
 } from 'lucide-react';
 
 // ============================================
@@ -46,6 +46,14 @@ export function Dashboard() {
     }
   }, [token]);
 
+  // Real-time attendance polling — refreshes every 30 seconds
+  // so if teacher marks attendance, student/parent sees it instantly
+  useEffect(() => {
+    if (!token) return;
+    const interval = setInterval(fetchAll, 30000);
+    return () => clearInterval(interval);
+  }, [token]);
+
   const fetchAll = async () => {
     setLoading(true);
     const headers = { 'Authorization': `Bearer ${token}` };
@@ -77,14 +85,15 @@ export function Dashboard() {
   const markAttendance = async (studentId: string, status: 'present' | 'absent') => {
     setMarkingStatus(prev => ({ ...prev, [studentId]: 'loading' }));
     try {
-      const res = await fetch('/api/dashboard/mark-attendance', {
+      // Use the real-time academic endpoint — updates instantly for student/parent too
+      const res = await fetch('/api/academic/attendance/mark', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ studentId, status })
       });
       if (res.ok) {
         setMarkingStatus(prev => ({ ...prev, [studentId]: status }));
-        setTimeout(fetchAll, 500);
+        setTimeout(fetchAll, 300); // refresh dashboard data
       }
     } catch {
       setMarkingStatus(prev => ({ ...prev, [studentId]: 'error' }));
@@ -195,7 +204,7 @@ export function Dashboard() {
         <QuickActions role={data?.role} navigate={navigate} />
 
         {/* Role-specific content */}
-        {data?.role === 'student' && <StudentDashboard data={data} />}
+        {data?.role === 'student' && <StudentDashboard data={data} onRefresh={fetchAll} />}
         {data?.role === 'parent' && <ParentDashboard data={data} />}
         {data?.role === 'teacher' && <TeacherDashboard data={data} markAttendance={markAttendance} markingStatus={markingStatus} />}
         {data?.role === 'principal' && <PrincipalDashboard data={data} navigate={navigate} />}
@@ -211,20 +220,26 @@ function QuickActions({ role, navigate }: { role: string; navigate: (path: strin
   const actions: Record<string, { label: string; icon: any; color: string; chatPrompt: string; link?: string }[]> = {
     student: [
       { label: 'My Attendance', icon: Calendar, color: 'bg-blue-50 text-blue-700 border-blue-200', chatPrompt: 'What is my attendance?' },
+      { label: 'Timetable', icon: Clock, color: 'bg-purple-50 text-purple-700 border-purple-200', link: '/timetable', chatPrompt: '' },
+      { label: 'My Marks', icon: Award, color: 'bg-green-50 text-green-700 border-green-200', link: '/marks', chatPrompt: '' },
       { label: 'Apply Leave', icon: FileText, color: 'bg-orange-50 text-orange-700 border-orange-200', link: '/leaves', chatPrompt: '' },
-      { label: 'Notices', icon: Bell, color: 'bg-purple-50 text-purple-700 border-purple-200', link: '/notices', chatPrompt: '' },
-      { label: 'Ask AI', icon: MessageCircle, color: 'bg-indigo-50 text-indigo-700 border-indigo-200', chatPrompt: 'How can you help me today?' },
+      { label: 'Notices', icon: Bell, color: 'bg-indigo-50 text-indigo-700 border-indigo-200', link: '/notices', chatPrompt: '' },
+      { label: 'Ask AI', icon: MessageCircle, color: 'bg-gray-50 text-gray-700 border-gray-200', chatPrompt: 'How can you help me today?' },
     ],
     parent: [
       { label: "Child Attendance", icon: Calendar, color: 'bg-blue-50 text-blue-700 border-blue-200', chatPrompt: "How is my child's attendance?" },
+      { label: 'Timetable', icon: Clock, color: 'bg-purple-50 text-purple-700 border-purple-200', link: '/timetable', chatPrompt: '' },
+      { label: 'Marks', icon: Award, color: 'bg-green-50 text-green-700 border-green-200', link: '/marks', chatPrompt: '' },
       { label: 'Apply Leave', icon: FileText, color: 'bg-orange-50 text-orange-700 border-orange-200', link: '/leaves', chatPrompt: '' },
+      { label: 'Schedule Meeting', icon: Clock, color: 'bg-teal-50 text-teal-700 border-teal-200', chatPrompt: 'I want to schedule a meeting with the teacher' },
       { label: 'Notices', icon: Bell, color: 'bg-purple-50 text-purple-700 border-purple-200', link: '/notices', chatPrompt: '' },
-      { label: 'Meet Teacher', icon: Clock, color: 'bg-green-50 text-green-700 border-green-200', chatPrompt: 'I want to schedule a meeting with the teacher' },
     ],
     teacher: [
       { label: 'Mark Attendance', icon: CheckCircle, color: 'bg-green-50 text-green-700 border-green-200', chatPrompt: 'Show attendance for my class' },
+      { label: 'Enter Marks', icon: Award, color: 'bg-blue-50 text-blue-700 border-blue-200', link: '/marks', chatPrompt: '' },
+      { label: 'Timetable', icon: Clock, color: 'bg-purple-50 text-purple-700 border-purple-200', link: '/timetable', chatPrompt: '' },
       { label: 'Leave Requests', icon: FileText, color: 'bg-orange-50 text-orange-700 border-orange-200', link: '/leaves', chatPrompt: '' },
-      { label: 'Send Notice', icon: Send, color: 'bg-blue-50 text-blue-700 border-blue-200', link: '/notices', chatPrompt: '' },
+      { label: 'Send Notice', icon: Send, color: 'bg-indigo-50 text-indigo-700 border-indigo-200', link: '/notices', chatPrompt: '' },
       { label: 'Escalate Issue', icon: AlertTriangle, color: 'bg-red-50 text-red-700 border-red-200', chatPrompt: 'I want to escalate a concern to management' },
     ],
     principal: [
@@ -322,7 +337,7 @@ function AttendanceHeatmap({ recent }: { recent: { date: string; status: string 
 // ============================================
 // STUDENT DASHBOARD
 // ============================================
-function StudentDashboard({ data }: { data: any }) {
+function StudentDashboard({ data, onRefresh: _onRefresh }: { data: any; onRefresh: () => void }) {
   const { profile, attendance } = data;
   const pct = parseFloat(attendance.percentage);
   const pctColor = pct >= 90 ? 'text-green-600' : pct >= 75 ? 'text-yellow-600' : 'text-red-600';

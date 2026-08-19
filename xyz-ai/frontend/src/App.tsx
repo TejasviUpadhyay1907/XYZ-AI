@@ -10,6 +10,8 @@ import { Dashboard } from './pages/Dashboard';
 import { Notices } from './pages/Notices';
 import { LeaveTracker } from './pages/LeaveTracker';
 import { Meetings } from './pages/Meetings';
+import { Timetable } from './pages/Timetable';
+import { Marks } from './pages/Marks';
 import { Avatar } from './components/Avatar';
 import { useChatStore } from './store/chatStore';
 import { useAuthStore } from './store/authStore';
@@ -111,6 +113,8 @@ function App() {
             <Route path="/notices" element={<Notices />} />
             <Route path="/leaves" element={<LeaveTracker />} />
             <Route path="/meetings" element={<Meetings />} />
+            <Route path="/timetable" element={<Timetable />} />
+            <Route path="/marks" element={<Marks />} />
             <Route path="/admin" element={<AdminPanel />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
