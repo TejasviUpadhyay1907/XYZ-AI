@@ -7,7 +7,7 @@ import { useAuthStore } from '../store/authStore';
 
 export function ChatInput() {
   const [input, setInput] = useState('');
-  const { currentRole, userId, isLoading, language, addMessage, setLoading, avatarState, setAvatarState } = useChatStore();
+  const { currentRole, userId, isLoading, language, addMessage, setLoading, setAvatarState } = useChatStore();
   const { user, token } = useAuthStore();
   const [isListening, setIsListening] = useState(false);
 
@@ -34,32 +34,7 @@ export function ChatInput() {
     voiceService.setStateChangeCallback(handleStateChange);
     // Cleanup
     return () => {
-      voiceService.setStateChangeCallback(null);
-    };
-  }, [setAvatarState]);
-
-  // Handle voice service state changes to update avatar state
-  useEffect(() => {
-    const handleStateChange = (event: string) => {
-      switch (event) {
-        case 'listening-start':
-          setAvatarState('listening');
-          break;
-        case 'listening-end':
-          // Only reset to idle if we're not already in thinking or speaking state
-          // (to avoid overriding states set by chat logic)
-          break; // Let chat logic handle state transitions
-        case 'speaking-start':
-          setAvatarState('speaking');
-          break;
-        case 'speaking-end':
-          setAvatarState('idle');
-          break;
-      }
-    };
-    voiceService.setStateChangeCallback(handleStateChange);
-    return () => {
-      voiceService.setStateChangeCallback(null);
+      voiceService.setStateChangeCallback(() => {});
     };
   }, [setAvatarState]);
 
