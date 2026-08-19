@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Bot, LogOut, User, Users, GraduationCap, Briefcase,
-  Globe, Activity, LayoutDashboard, Bell, FileText, MessageCircle
+  Globe, Activity, LayoutDashboard, Bell, FileText, MessageCircle, Calendar
 } from 'lucide-react';
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
@@ -56,6 +56,7 @@ export function Header() {
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', show: true },
     { path: '/notices', icon: Bell, label: 'Notices', show: true },
     { path: '/leaves', icon: FileText, label: 'Leaves', show: user?.role === 'parent' || user?.role === 'student' || user?.role === 'teacher' },
+    { path: '/meetings', icon: Calendar, label: 'Meetings', show: user?.role === 'parent' || user?.role === 'teacher' },
     { path: '/admin', icon: Activity, label: 'Traces', show: user?.role === 'principal' },
   ] : [];
 

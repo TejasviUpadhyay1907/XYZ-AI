@@ -7,8 +7,11 @@ const express = require('express');
 const router = express.Router();
 const AttendanceService = require('../mockServices/attendanceService');
 const StudentService = require('../mockServices/studentService');
+const LeaveService = require('../mockServices/leaveService');
+const NoticeService = require('../mockServices/noticeService');
+const MeetingService = require('../mockServices/meetingService');
 
-// GET /api/dashboard/profile - Get current user's profile data
+// GET /api/dashboard/profile
 router.get('/profile', (req, res) => {
   try {
     const { id, role } = req.user;
@@ -17,12 +20,7 @@ router.get('/profile', (req, res) => {
       const profile = StudentService.getStudentProfile(id);
       const attendance = AttendanceService.getStudentAttendance(id);
       const percentage = attendance.total > 0 ? ((attendance.present / attendance.total) * 100).toFixed(1) : '0';
-
-      return res.json({
-        role,
-        profile: profile || { name: req.user.name, id },
-        attendance: { ...attendance, percentage }
-      });
+      return res.json({ role, profile: profile || { name: req.user.name, id }, attendance: { ...attendance, percentage } });
     }
 
     if (role === 'parent') {
@@ -31,13 +29,8 @@ router.get('/profile', (req, res) => {
         const profile = StudentService.getStudentProfile(childId);
         const attendance = AttendanceService.getStudentAttendance(childId);
         const percentage = attendance.total > 0 ? ((attendance.present / attendance.total) * 100).toFixed(1) : '0';
-        return {
-          id: childId,
-          profile: profile || { name: 'Unknown', id: childId },
-          attendance: { ...attendance, percentage }
-        };
+        return { id: childId, profile: profile || { name: 'Unknown', id: childId }, attendance: { ...attendance, percentage } };
       });
-
       return res.json({ role, children: childrenData });
     }
 
@@ -46,15 +39,8 @@ router.get('/profile', (req, res) => {
       const classData = students.map(student => {
         const att = AttendanceService.getStudentAttendance(student.id);
         const percentage = att.total > 0 ? ((att.present / att.total) * 100).toFixed(1) : '0';
-        return {
-          id: student.id,
-          name: student.name,
-          grade: student.grade,
-          section: student.section,
-          attendance: { present: att.present, absent: att.absent, total: att.total, percentage }
-        };
+        return { id: student.id, name: student.name, grade: student.grade, section: student.section, attendance: { present: att.present, absent: att.absent, total: att.total, percentage } };
       });
-
       return res.json({ role, class_students: classData });
     }
 
@@ -70,59 +56,32 @@ router.get('/profile', (req, res) => {
   }
 });
 
-// POST /api/dashboard/mark-attendance - Teacher marks attendance
+// POST /api/dashboard/mark-attendance
 router.post('/mark-attendance', (req, res) => {
   try {
-    if (req.user.role !== 'teacher') {
-      return res.status(403).json({ error: 'Only teachers can mark attendance' });
-    }
-
+    if (req.user.role !== 'teacher') return res.status(403).json({ error: 'Only teachers can mark attendance' });
     const { studentId, status, date } = req.body;
-    if (!studentId || !status) {
-      return res.status(400).json({ error: 'studentId and status are required' });
-    }
-
+    if (!studentId || !status) return res.status(400).json({ error: 'studentId and status are required' });
     const teacherId = req.user.id;
-    if (!StudentService.canTeacherAccessStudent(teacherId, studentId)) {
-      return res.status(403).json({ error: 'Not authorized to mark attendance for this student' });
-    }
-
+    if (!StudentService.canTeacherAccessStudent(teacherId, studentId)) return res.status(403).json({ error: 'Not authorized' });
     const attendanceDate = date || new Date().toISOString().split('T')[0];
     AttendanceService.markAttendance(studentId, attendanceDate, status, teacherId);
-
     const student = StudentService.getStudentProfile(studentId);
-    res.json({
-      success: true,
-      student_name: student?.name || studentId,
-      status,
-      date: attendanceDate
-    });
+    res.json({ success: true, student_name: student?.name || studentId, status, date: attendanceDate });
   } catch (error) {
     console.error('Mark attendance error:', error);
     res.status(500).json({ error: 'Failed to mark attendance' });
   }
 });
 
-module.exports = router;
-
-const LeaveService = require('../mockServices/leaveService');
-const NoticeService = require('../mockServices/noticeService');
-const MeetingService = require('../mockServices/meetingService');
-
-// GET /api/dashboard/leaves - Get leave applications for current user
+// GET /api/dashboard/leaves
 router.get('/leaves', (req, res) => {
   try {
     const { id, role } = req.user;
     let leaves = [];
-
-    if (role === 'student') {
-      leaves = LeaveService.getLeavesForStudent(id);
-    } else if (role === 'parent') {
-      leaves = LeaveService.getLeavesForParent(id);
-    } else if (role === 'teacher' || role === 'principal') {
-      leaves = LeaveService.getPendingLeaves();
-    }
-
+    if (role === 'student') leaves = LeaveService.getLeavesForStudent(id);
+    else if (role === 'parent') leaves = LeaveService.getLeavesForParent(id);
+    else if (role === 'teacher' || role === 'principal') leaves = LeaveService.getPendingLeaves();
     res.json({ leaves });
   } catch (error) {
     console.error('Leaves error:', error);
@@ -130,22 +89,15 @@ router.get('/leaves', (req, res) => {
   }
 });
 
-// PATCH /api/dashboard/leaves/:id - Approve or reject a leave (teacher/principal)
+// PATCH /api/dashboard/leaves/:leaveId
 router.patch('/leaves/:leaveId', (req, res) => {
   try {
     const { role, id } = req.user;
-    if (!['teacher', 'principal'].includes(role)) {
-      return res.status(403).json({ error: 'Only teachers and principals can approve leaves' });
-    }
-
-    const { status } = req.body; // 'approved' | 'rejected'
-    if (!['approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: 'Status must be approved or rejected' });
-    }
-
+    if (!['teacher', 'principal'].includes(role)) return res.status(403).json({ error: 'Only teachers and principals can approve leaves' });
+    const { status } = req.body;
+    if (!['approved', 'rejected'].includes(status)) return res.status(400).json({ error: 'Status must be approved or rejected' });
     const leave = LeaveService.updateLeaveStatus(req.params.leaveId, status, id);
     if (!leave) return res.status(404).json({ error: 'Leave not found' });
-
     res.json({ leave });
   } catch (error) {
     console.error('Leave update error:', error);
@@ -153,7 +105,7 @@ router.patch('/leaves/:leaveId', (req, res) => {
   }
 });
 
-// GET /api/dashboard/notices - Get notices for current user
+// GET /api/dashboard/notices
 router.get('/notices', (req, res) => {
   try {
     const { id, role } = req.user;
@@ -166,7 +118,7 @@ router.get('/notices', (req, res) => {
   }
 });
 
-// PATCH /api/dashboard/notices/:id/read - Mark notice as read
+// PATCH /api/dashboard/notices/:noticeId/read
 router.patch('/notices/:noticeId/read', (req, res) => {
   try {
     const notice = NoticeService.markAsRead(req.params.noticeId, req.user.id);
@@ -176,7 +128,7 @@ router.patch('/notices/:noticeId/read', (req, res) => {
   }
 });
 
-// GET /api/dashboard/meetings - Get meetings for current user
+// GET /api/dashboard/meetings
 router.get('/meetings', (req, res) => {
   try {
     const meetings = MeetingService.getMeetingsForUser(req.user.id);
@@ -185,3 +137,21 @@ router.get('/meetings', (req, res) => {
     res.status(500).json({ error: 'Failed to fetch meetings' });
   }
 });
+
+// PATCH /api/dashboard/meetings/:meetingId
+router.patch('/meetings/:meetingId', (req, res) => {
+  try {
+    const { role } = req.user;
+    if (!['teacher', 'principal'].includes(role)) return res.status(403).json({ error: 'Only teachers and principals can update meetings' });
+    const { status, notes } = req.body;
+    if (!['confirmed', 'rejected', 'completed'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    const meeting = MeetingService.updateMeetingStatus(req.params.meetingId, status, notes || null);
+    if (!meeting) return res.status(404).json({ error: 'Meeting not found' });
+    res.json({ meeting });
+  } catch (error) {
+    console.error('Meeting update error:', error);
+    res.status(500).json({ error: 'Failed to update meeting' });
+  }
+});
+
+module.exports = router;

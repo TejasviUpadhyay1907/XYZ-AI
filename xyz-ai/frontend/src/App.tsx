@@ -9,8 +9,47 @@ import { AdminPanel } from './pages/AdminPanel';
 import { Dashboard } from './pages/Dashboard';
 import { Notices } from './pages/Notices';
 import { LeaveTracker } from './pages/LeaveTracker';
+import { Meetings } from './pages/Meetings';
 import { Avatar } from './components/Avatar';
 import { useChatStore } from './store/chatStore';
+import { useAuthStore } from './store/authStore';
+import { Download } from 'lucide-react';
+
+function ChatExportBar() {
+  const { messages } = useChatStore();
+  const { user } = useAuthStore();
+
+  const exportAsText = () => {
+    if (messages.length === 0) return;
+    const lines = messages.map(m => {
+      const speaker = m.role === 'user' ? (user?.name || 'You') : 'XYZ AI';
+      return `[${speaker}]\n${m.content}\n`;
+    });
+    const content = `XYZ AI Conversation Export\nUser: ${user?.name || 'Unknown'} (${user?.role || ''})\nDate: ${new Date().toLocaleString()}\n\n${'─'.repeat(50)}\n\n${lines.join('\n')}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `xyz-ai-conversation-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (messages.length <= 1) return null;
+
+  return (
+    <div className="flex justify-end mb-2">
+      <button
+        onClick={exportAsText}
+        className="flex items-center gap-1.5 px-3 py-1 text-xs text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+        title="Export conversation"
+      >
+        <Download className="w-3.5 h-3.5" />
+        Export chat
+      </button>
+    </div>
+  );
+}
 
 function ChatLayout() {
   const { avatarState } = useChatStore();
@@ -49,6 +88,7 @@ function ChatLayout() {
         <ChatArea />
         <div className="border-t bg-white px-4 py-3">
           <div className="max-w-3xl mx-auto">
+            <ChatExportBar />
             <ChatInput />
           </div>
         </div>
@@ -70,6 +110,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/notices" element={<Notices />} />
             <Route path="/leaves" element={<LeaveTracker />} />
+            <Route path="/meetings" element={<Meetings />} />
             <Route path="/admin" element={<AdminPanel />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
