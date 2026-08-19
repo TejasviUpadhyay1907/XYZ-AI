@@ -40,6 +40,7 @@ const dashboardRoutes = require('./src/routes/dashboard');
 const notificationRoutes = require('./src/routes/notifications');
 const ttsRoutes = require('./src/routes/tts');
 const academicRoutes = require('./src/routes/academic');
+const myDayRoutes = require('./src/routes/myday');
 
 // Serve static files from the React frontend build
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
@@ -61,6 +62,9 @@ app.use('/api/notifications', authenticateToken, notificationRoutes);
 
 // Academic routes (timetable, marks, real-time attendance)
 app.use('/api/academic', authenticateToken, academicRoutes);
+
+// My Day routes (daily briefing, trend, weekly summary)
+app.use('/api/myday', authenticateToken, myDayRoutes);
 
 // Authenticated API routes
 app.use('/api', authenticateToken, apiRoutes);

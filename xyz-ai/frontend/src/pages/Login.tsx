@@ -20,8 +20,8 @@ export function Login() {
   const { user, login: loginUser } = useAuthStore();
   const { setRole, clearMessages } = useChatStore();
 
-  // Already logged in → go to dashboard
-  if (user) return <Navigate to="/dashboard" replace />;
+  // Already logged in → go to my day
+  if (user) return <Navigate to="/myday" replace />;
 
   const doLogin = async (emailVal: string, passVal: string) => {
     setError('');
@@ -42,8 +42,8 @@ export function Login() {
       if (decoded?.role) setRole(decoded.role as any);
       clearMessages();
 
-      // Redirect to dashboard after login
-      navigate('/dashboard');
+      // Redirect to My Day after login
+      navigate('/myday');
     } catch (err: any) {
       setError(err.message);
     } finally {

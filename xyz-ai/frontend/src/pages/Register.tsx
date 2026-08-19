@@ -16,7 +16,7 @@ export function Register() {
   const { setRole: setChatRole, clearMessages } = useChatStore();
 
   // Already logged in → go to dashboard
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (user) return <Navigate to="/myday" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,8 +38,8 @@ export function Register() {
       if (decoded?.role) setChatRole(decoded.role as any);
       clearMessages();
 
-      // Redirect to dashboard
-      navigate('/dashboard');
+      // Redirect to My Day
+      navigate('/myday');
     } catch (err: any) {
       setError(err.message);
     } finally {
