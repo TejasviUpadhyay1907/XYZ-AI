@@ -22,6 +22,31 @@ export function ChatInput() {
     }
   }, [searchParams, token, setSearchParams]);
 
+  // Handle voice service state changes to update avatar state
+  useEffect(() => {
+    const handleStateChange = (event: string) => {
+      switch (event) {
+        case 'listening-start':
+          setAvatarState('listening');
+          break;
+        case 'listening-end':
+          // Only reset to idle if we're not already in thinking or speaking state
+          // (to avoid overriding states set by chat logic)
+          break; // Let chat logic handle state transitions
+        case 'speaking-start':
+          setAvatarState('speaking');
+          break;
+        case 'speaking-end':
+          setAvatarState('idle');
+          break;
+      }
+    };
+    voiceService.setStateChangeCallback(handleStateChange);
+    return () => {
+      voiceService.setStateChangeCallback(null);
+    };
+  }, [setAvatarState]);
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!input.trim() || isLoading || !token) return;
