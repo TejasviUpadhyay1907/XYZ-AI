@@ -1,20 +1,20 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Header } from './components/Header';
-import { ChatArea } from './components/ChatArea';
-import { ChatInput } from './components/ChatInput';
-import { PrivateRoute } from './components/PrivateRoute';
+import { ModernLayout } from './components/layout/ModernLayout';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { AdminPanel } from './pages/AdminPanel';
 import { Dashboard } from './pages/Dashboard';
 import { Avatar } from './components/Avatar';
+import { ChatArea } from './components/ChatArea';
+import { ChatInput } from './components/ChatInput';
 import { useChatStore } from './store/chatStore';
 import { voiceService } from './services/voiceService';
 
-function ChatLayout() {
-  const { avatarState, setAvatarState } = useChatStore();
+function App() {
+  const { setAvatarState } = useChatStore();
 
+  // Set up voice service avatar state callback
   useEffect(() => {
     voiceService.setStateChangeCallback((event) => {
       switch (event) {
@@ -37,6 +37,28 @@ function ChatLayout() {
       voiceService.setStateChangeCallback(null);
     };
   }, [setAvatarState]);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<ModernLayout />}>
+          <Route index element={<ChatLayout />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="admin" element={<AdminPanel />} />
+        </Route>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+
+// Keep the old ChatLayout for now to avoid breaking changes
+function ChatLayout() {
+  const { avatarState } = useChatStore();
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -77,25 +99,3 @@ function ChatLayout() {
     </div>
   );
 }
-
-function App() {
-  return (
-    <BrowserRouter>
-      <div className="flex flex-col h-screen bg-gray-50">
-        <Header />
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route element={<PrivateRoute />}>
-            <Route path="/" element={<ChatLayout />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/admin" element={<AdminPanel />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
-  );
-}
-
-export default App;

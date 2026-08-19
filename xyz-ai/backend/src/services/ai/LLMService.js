@@ -214,6 +214,85 @@ function getToolDefinitions(role) {
     });
   }
 
+  // === NEW WORKFLOW TOOLS ===
+
+  // Leave application (parent and student)
+  if (role === 'parent' || role === 'student') {
+    tools.push({
+      type: 'function',
+      function: {
+        name: 'apply_leave',
+        description: 'Submit a leave application for a student. Parents apply for their children, students apply for themselves. Collect: dates, reason. Confirm before submitting.',
+        parameters: {
+          type: 'object',
+          properties: {
+            student_name: { type: 'string', description: 'Name of the student' },
+            start_date: { type: 'string', description: 'Leave start date (YYYY-MM-DD)' },
+            end_date: { type: 'string', description: 'Leave end date (YYYY-MM-DD)' },
+            reason: { type: 'string', description: 'Reason for leave (e.g., fever, family event, medical)' }
+          },
+          required: ['start_date', 'end_date', 'reason']
+        }
+      }
+    });
+  }
+
+  // Send notice (teacher and principal)
+  if (role === 'teacher' || role === 'principal') {
+    tools.push({
+      type: 'function',
+      function: {
+        name: 'send_notice',
+        description: 'Send a notice/announcement to parents or students. Requires title, content, and target audience.',
+        parameters: {
+          type: 'object',
+          properties: {
+            title: { type: 'string', description: 'Notice title' },
+            content: { type: 'string', description: 'Notice content/body' },
+            target_audience: { type: 'string', enum: ['all_parents', 'students', 'all'], description: 'Who should receive this notice' },
+            target_grade: { type: 'string', description: 'Specific grade to target (optional)' }
+          },
+          required: ['title', 'content', 'target_audience']
+        }
+      }
+    });
+  }
+
+  // Schedule meeting (parent and teacher)
+  if (role === 'parent' || role === 'teacher') {
+    tools.push({
+      type: 'function',
+      function: {
+        name: 'schedule_meeting',
+        description: 'Request a meeting between a parent and teacher. Collect: purpose, preferred date/time.',
+        parameters: {
+          type: 'object',
+          properties: {
+            with_person: { type: 'string', description: 'Who to meet with (e.g., "class teacher", "Ms. Desai", "Rahul\'s parent")' },
+            purpose: { type: 'string', description: 'Purpose of the meeting' },
+            preferred_date: { type: 'string', description: 'Preferred date (YYYY-MM-DD)' },
+            preferred_time: { type: 'string', description: 'Preferred time (e.g., "10:00 AM", "afternoon")' }
+          },
+          required: ['purpose']
+        }
+      }
+    });
+  }
+
+  // Get notices (all roles)
+  tools.push({
+    type: 'function',
+    function: {
+      name: 'get_notices',
+      description: 'Get school notices and announcements relevant to the current user.',
+      parameters: {
+        type: 'object',
+        properties: {},
+        required: []
+      }
+    }
+  });
+
   return tools;
 }
 

@@ -14,6 +14,9 @@ const LLMService = require('./LLMService');
 const AttendanceService = require('../../mockServices/attendanceService');
 const StudentService = require('../../mockServices/studentService');
 const EscalationService = require('../../mockServices/escalationService');
+const LeaveService = require('../../mockServices/leaveService');
+const NoticeService = require('../../mockServices/noticeService');
+const MeetingService = require('../../mockServices/meetingService');
 const AuditService = require('../auditService');
 
 /**
@@ -237,6 +240,135 @@ function executeTool(toolName, args, context) {
 
       const analytics = AttendanceService.getSchoolAttendance();
       return JSON.stringify(analytics);
+    }
+
+    case 'apply_leave': {
+      const { student_name, start_date, end_date, reason } = args;
+
+      if (!['parent', 'student'].includes(role)) {
+        return JSON.stringify({ error: 'Only parents and students can apply for leave.' });
+      }
+
+      let studentId = userId;
+      let studentDisplayName = student_name || 'yourself';
+
+      if (role === 'parent') {
+        const children = AttendanceService.getChildrenForParent(userId);
+        if (student_name) {
+          const lowerName = student_name.toLowerCase();
+          for (const childId of children) {
+            const student = StudentService.getStudentProfile(childId);
+            if (student && student.name.toLowerCase().includes(lowerName)) {
+              studentId = childId;
+              studentDisplayName = student.name;
+              break;
+            }
+          }
+        } else if (children.length === 1) {
+          studentId = children[0];
+          const student = StudentService.getStudentProfile(studentId);
+          studentDisplayName = student?.name || studentId;
+        }
+      }
+
+      const leave = LeaveService.applyLeave({
+        studentId,
+        studentName: studentDisplayName,
+        parentId: role === 'parent' ? userId : null,
+        startDate: start_date,
+        endDate: end_date,
+        reason
+      });
+
+      return JSON.stringify({
+        success: true,
+        leave_id: leave.id,
+        student_name: studentDisplayName,
+        start_date: leave.startDate,
+        end_date: leave.endDate,
+        reason: leave.reason,
+        status: leave.status
+      });
+    }
+
+    case 'send_notice': {
+      const { title, content, target_audience, target_grade } = args;
+
+      if (!['teacher', 'principal'].includes(role)) {
+        return JSON.stringify({ error: 'Only teachers and principals can send notices.' });
+      }
+
+      const senderName = role === 'principal' ? 'Dr. School Principal' : 'Ms. Priya Desai';
+      const notice = NoticeService.sendNotice({
+        title,
+        content,
+        sentBy: userId,
+        sentByName: senderName,
+        targetAudience: target_audience,
+        targetGrade: target_grade || null
+      });
+
+      return JSON.stringify({
+        success: true,
+        notice_id: notice.id,
+        title: notice.title,
+        target_audience: notice.targetAudience,
+        sent_at: notice.createdAt
+      });
+    }
+
+    case 'schedule_meeting': {
+      const { with_person, purpose, preferred_date, preferred_time } = args;
+
+      if (!['parent', 'teacher'].includes(role)) {
+        return JSON.stringify({ error: 'Only parents and teachers can schedule meetings.' });
+      }
+
+      // Resolve who to meet with
+      let requestedWith = 'teacher001';
+      let requestedWithName = 'Ms. Priya Desai';
+
+      if (role === 'teacher') {
+        requestedWith = 'parent001';
+        requestedWithName = 'Mr. Sharma';
+      }
+
+      const requesterName = role === 'parent' ? 'Mr. Sharma' : 'Ms. Priya Desai';
+
+      const meeting = MeetingService.requestMeeting({
+        requestedBy: userId,
+        requestedByName: requesterName,
+        requestedWith,
+        requestedWithName,
+        purpose,
+        preferredDate: preferred_date || null,
+        preferredTime: preferred_time || null
+      });
+
+      return JSON.stringify({
+        success: true,
+        meeting_id: meeting.id,
+        with: requestedWithName,
+        purpose: meeting.purpose,
+        preferred_date: meeting.preferredDate,
+        preferred_time: meeting.preferredTime,
+        status: meeting.status
+      });
+    }
+
+    case 'get_notices': {
+      const grade = role === 'student' ? '10th' : null;
+      const userNotices = NoticeService.getNoticesForUser(userId, role, grade);
+      return JSON.stringify({
+        notices: userNotices.slice(0, 5).map(n => ({
+          id: n.id,
+          title: n.title,
+          content: n.content,
+          sent_by: n.sentByName,
+          date: n.createdAt,
+          read: n.readBy.includes(userId)
+        }))
+      });
     }
 
     default:
