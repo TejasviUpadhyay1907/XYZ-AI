@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import type { SupportedLanguage } from '../services/languageService';
-import { translate } from '../services/languageService';
 
 export type Role = 'student' | 'parent' | 'teacher' | 'principal';
 export type AvatarState = 'idle' | 'listening' | 'thinking' | 'speaking';
@@ -29,17 +28,15 @@ interface ChatState {
   setAvatarState: (state: AvatarState) => void;
 }
 
-// Initial welcome message based on role and language
-const getWelcomeMessage = (role: Role, language: SupportedLanguage): string => {
-  const welcomeKeys: Record<Role, string> = {
-    student: 'welcome_student',
-    parent: 'welcome_parent',
-    teacher: 'welcome_teacher',
-    principal: 'welcome_principal'
+// Initial welcome message based on role
+const getWelcomeMessage = (role: Role, _language: SupportedLanguage): string => {
+  const messages: Record<Role, string> = {
+    student: "Hello! I'm your Academic Assistant. I can help you check attendance, apply for leave, view notices, and answer school questions. What would you like to know?",
+    parent: "Hello! I'm your Parent Support Assistant. I can help you check your child's attendance, apply for leave, schedule meetings with teachers, and more. How can I help?",
+    teacher: "Hello! I'm your Teaching Assistant. I can help you mark attendance, view class reports, send notices to parents, and manage student concerns. What would you like to do?",
+    principal: "Hello! I'm your Management Assistant. I can help you with school analytics, send announcements, review attendance trends, and monitor the system. What do you need?"
   };
-
-  const key = welcomeKeys[role] || 'welcome_generic';
-  return translate(key, language) || `Hello! I'm your ${role} assistant. How can I help you today?`;
+  return messages[role] || messages.student;
 };
 
 export const useChatStore = create<ChatState>((set) => ({

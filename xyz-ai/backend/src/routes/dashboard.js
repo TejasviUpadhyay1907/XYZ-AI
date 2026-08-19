@@ -104,3 +104,84 @@ router.post('/mark-attendance', (req, res) => {
 });
 
 module.exports = router;
+
+const LeaveService = require('../mockServices/leaveService');
+const NoticeService = require('../mockServices/noticeService');
+const MeetingService = require('../mockServices/meetingService');
+
+// GET /api/dashboard/leaves - Get leave applications for current user
+router.get('/leaves', (req, res) => {
+  try {
+    const { id, role } = req.user;
+    let leaves = [];
+
+    if (role === 'student') {
+      leaves = LeaveService.getLeavesForStudent(id);
+    } else if (role === 'parent') {
+      leaves = LeaveService.getLeavesForParent(id);
+    } else if (role === 'teacher' || role === 'principal') {
+      leaves = LeaveService.getPendingLeaves();
+    }
+
+    res.json({ leaves });
+  } catch (error) {
+    console.error('Leaves error:', error);
+    res.status(500).json({ error: 'Failed to fetch leaves' });
+  }
+});
+
+// PATCH /api/dashboard/leaves/:id - Approve or reject a leave (teacher/principal)
+router.patch('/leaves/:leaveId', (req, res) => {
+  try {
+    const { role, id } = req.user;
+    if (!['teacher', 'principal'].includes(role)) {
+      return res.status(403).json({ error: 'Only teachers and principals can approve leaves' });
+    }
+
+    const { status } = req.body; // 'approved' | 'rejected'
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Status must be approved or rejected' });
+    }
+
+    const leave = LeaveService.updateLeaveStatus(req.params.leaveId, status, id);
+    if (!leave) return res.status(404).json({ error: 'Leave not found' });
+
+    res.json({ leave });
+  } catch (error) {
+    console.error('Leave update error:', error);
+    res.status(500).json({ error: 'Failed to update leave' });
+  }
+});
+
+// GET /api/dashboard/notices - Get notices for current user
+router.get('/notices', (req, res) => {
+  try {
+    const { id, role } = req.user;
+    const grade = role === 'student' ? '10th' : null;
+    const notices = NoticeService.getNoticesForUser(id, role, grade);
+    res.json({ notices, unread_count: notices.filter(n => !n.readBy.includes(id)).length });
+  } catch (error) {
+    console.error('Notices error:', error);
+    res.status(500).json({ error: 'Failed to fetch notices' });
+  }
+});
+
+// PATCH /api/dashboard/notices/:id/read - Mark notice as read
+router.patch('/notices/:noticeId/read', (req, res) => {
+  try {
+    const notice = NoticeService.markAsRead(req.params.noticeId, req.user.id);
+    res.json({ notice });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to mark notice as read' });
+  }
+});
+
+// GET /api/dashboard/meetings - Get meetings for current user
+router.get('/meetings', (req, res) => {
+  try {
+    const meetings = MeetingService.getMeetingsForUser(req.user.id);
+    res.json({ meetings });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch meetings' });
+  }
+});

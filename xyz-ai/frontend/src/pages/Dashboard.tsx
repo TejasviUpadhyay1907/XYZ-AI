@@ -208,28 +208,29 @@ export function Dashboard() {
 // QUICK ACTIONS
 // ============================================
 function QuickActions({ role, navigate }: { role: string; navigate: (path: string) => void }) {
-  const actions: Record<string, { label: string; icon: any; color: string; chatPrompt: string }[]> = {
+  const actions: Record<string, { label: string; icon: any; color: string; chatPrompt: string; link?: string }[]> = {
     student: [
-      { label: 'Check Attendance', icon: Calendar, color: 'bg-blue-50 text-blue-700 border-blue-200', chatPrompt: 'What is my attendance?' },
-      { label: 'Apply for Leave', icon: FileText, color: 'bg-orange-50 text-orange-700 border-orange-200', chatPrompt: 'I want to apply for leave' },
-      { label: 'View Notices', icon: Bell, color: 'bg-purple-50 text-purple-700 border-purple-200', chatPrompt: 'Show me school notices' },
+      { label: 'My Attendance', icon: Calendar, color: 'bg-blue-50 text-blue-700 border-blue-200', chatPrompt: 'What is my attendance?' },
+      { label: 'Apply Leave', icon: FileText, color: 'bg-orange-50 text-orange-700 border-orange-200', link: '/leaves', chatPrompt: '' },
+      { label: 'Notices', icon: Bell, color: 'bg-purple-50 text-purple-700 border-purple-200', link: '/notices', chatPrompt: '' },
+      { label: 'Ask AI', icon: MessageCircle, color: 'bg-indigo-50 text-indigo-700 border-indigo-200', chatPrompt: 'How can you help me today?' },
     ],
     parent: [
-      { label: "Child's Attendance", icon: Calendar, color: 'bg-blue-50 text-blue-700 border-blue-200', chatPrompt: "How is my child's attendance?" },
-      { label: 'Apply for Leave', icon: FileText, color: 'bg-orange-50 text-orange-700 border-orange-200', chatPrompt: 'I want to apply for leave for my child' },
-      { label: 'Schedule Meeting', icon: Clock, color: 'bg-green-50 text-green-700 border-green-200', chatPrompt: 'I want to schedule a meeting with the teacher' },
-      { label: 'Talk to Teacher', icon: MessageCircle, color: 'bg-red-50 text-red-700 border-red-200', chatPrompt: 'I want to talk to my child\'s teacher' },
+      { label: "Child Attendance", icon: Calendar, color: 'bg-blue-50 text-blue-700 border-blue-200', chatPrompt: "How is my child's attendance?" },
+      { label: 'Apply Leave', icon: FileText, color: 'bg-orange-50 text-orange-700 border-orange-200', link: '/leaves', chatPrompt: '' },
+      { label: 'Notices', icon: Bell, color: 'bg-purple-50 text-purple-700 border-purple-200', link: '/notices', chatPrompt: '' },
+      { label: 'Meet Teacher', icon: Clock, color: 'bg-green-50 text-green-700 border-green-200', chatPrompt: 'I want to schedule a meeting with the teacher' },
     ],
     teacher: [
-      { label: 'Mark Attendance', icon: CheckCircle, color: 'bg-green-50 text-green-700 border-green-200', chatPrompt: 'Mark attendance for my class' },
-      { label: 'Send Notice', icon: Send, color: 'bg-blue-50 text-blue-700 border-blue-200', chatPrompt: 'Send a notice to parents' },
-      { label: 'Class Report', icon: TrendingUp, color: 'bg-purple-50 text-purple-700 border-purple-200', chatPrompt: 'Show attendance for my class' },
+      { label: 'Mark Attendance', icon: CheckCircle, color: 'bg-green-50 text-green-700 border-green-200', chatPrompt: 'Show attendance for my class' },
+      { label: 'Leave Requests', icon: FileText, color: 'bg-orange-50 text-orange-700 border-orange-200', link: '/leaves', chatPrompt: '' },
+      { label: 'Send Notice', icon: Send, color: 'bg-blue-50 text-blue-700 border-blue-200', link: '/notices', chatPrompt: '' },
       { label: 'Escalate Issue', icon: AlertTriangle, color: 'bg-red-50 text-red-700 border-red-200', chatPrompt: 'I want to escalate a concern to management' },
     ],
     principal: [
-      { label: 'School Analytics', icon: TrendingUp, color: 'bg-indigo-50 text-indigo-700 border-indigo-200', chatPrompt: 'Show overall school attendance' },
-      { label: 'Send Notice', icon: Send, color: 'bg-blue-50 text-blue-700 border-blue-200', chatPrompt: 'Send a notice to all parents' },
-      { label: 'View Traces', icon: Star, color: 'bg-amber-50 text-amber-700 border-amber-200', chatPrompt: '' },
+      { label: 'Analytics', icon: TrendingUp, color: 'bg-indigo-50 text-indigo-700 border-indigo-200', chatPrompt: 'Show overall school attendance' },
+      { label: 'Send Notice', icon: Send, color: 'bg-blue-50 text-blue-700 border-blue-200', link: '/notices', chatPrompt: '' },
+      { label: 'Trace Panel', icon: Star, color: 'bg-amber-50 text-amber-700 border-amber-200', link: '/admin', chatPrompt: '' },
       { label: 'Low Attendance', icon: AlertTriangle, color: 'bg-red-50 text-red-700 border-red-200', chatPrompt: 'Which students have low attendance?' },
     ],
   };
@@ -246,10 +247,9 @@ function QuickActions({ role, navigate }: { role: string; navigate: (path: strin
           <button
             key={i}
             onClick={() => {
-              if (action.label === 'View Traces') {
-                navigate('/admin');
-              } else {
-                // Navigate to chat with pre-filled prompt
+              if (action.link) {
+                navigate(action.link);
+              } else if (action.chatPrompt) {
                 navigate('/?prompt=' + encodeURIComponent(action.chatPrompt));
               }
             }}

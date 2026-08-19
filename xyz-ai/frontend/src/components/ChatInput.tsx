@@ -1,15 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Send, Mic, MicOff } from 'lucide-react';
 import { useChatStore } from '../store/chatStore';
 import type { SupportedLanguage } from '../services/languageService';
 import { voiceService } from '../services/voiceService';
 import { useAuthStore } from '../store/authStore';
+import { useSearchParams } from 'react-router-dom';
 
 export function ChatInput() {
   const [input, setInput] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
   const { isLoading, language, addMessage, setLoading, setAvatarState } = useChatStore();
   const { user, token } = useAuthStore();
   const [isListening, setIsListening] = useState(false);
+
+  // Handle pre-filled prompt from Quick Actions (URL ?prompt=...)
+  useEffect(() => {
+    const prompt = searchParams.get('prompt');
+    if (prompt && token) {
+      setInput(decodeURIComponent(prompt));
+      setSearchParams({}, { replace: true }); // clean up URL
+    }
+  }, [searchParams, token, setSearchParams]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
