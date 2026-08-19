@@ -1,37 +1,18 @@
 import React, { useRef, useEffect } from 'react';
 import { useChatStore } from '../store/chatStore';
 import { ChatMessage } from './ChatMessage';
+import { useAuthStore } from '../store/authStore';
 import { voiceService } from '../services/voiceService';
 import type { SupportedLanguage } from '../services/languageService';
 
 export function ChatArea() {
-  const { messages, isLoading, language, setAvatarState } = useChatStore();
+  const { messages, isLoading, setAvatarState, language, addMessage, setLoading } = useChatStore();
+  const { user, token } = useAuthStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const lastSpokenContentRef = useRef('');
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
-
-  // Auto-TTS for assistant messages + avatar state sync
-  useEffect(() => {
-    if (messages.length === 0) return;
-    const lastMessage = messages[messages.length - 1];
-    if (
-      lastMessage.role === 'assistant' &&
-      !lastMessage.isError &&
-      lastMessage.content !== lastSpokenContentRef.current
-    ) {
-      setAvatarState('speaking');
-      voiceService.speakText(lastMessage.content, language as SupportedLanguage);
-      lastSpokenContentRef.current = lastMessage.content;
-
-      // Reset avatar to idle after estimated speaking time
-      const wordCount = lastMessage.content.split(' ').length;
-      const speakDuration = Math.max(2000, wordCount * 300); // ~300ms per word
-      setTimeout(() => setAvatarState('idle'), speakDuration);
-    }
-  }, [messages, language, setAvatarState]);
 
   // Set avatar to thinking when loading
   useEffect(() => {
@@ -39,6 +20,54 @@ export function ChatArea() {
       setAvatarState('thinking');
     }
   }, [isLoading, setAvatarState]);
+
+  // Send a follow-up chip message to the AI (not just client-side)
+  const handleFollowUp = async (followUpText: string) => {
+    if (isLoading || !token) return;
+
+    // Add user message
+    addMessage({ role: 'user', content: followUpText });
+    setLoading(true);
+    setAvatarState('thinking');
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          sessionId: `session-${user?.id || 'default'}`,
+          language,
+          message: followUpText
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed');
+
+      // Speak and show AI response
+      voiceService.speakText(data.reply, language as SupportedLanguage);
+      setAvatarState('speaking');
+
+      addMessage({
+        role: 'assistant',
+        content: data.reply,
+        suggestedFollowUps: data.suggestedFollowUps,
+        needsClarification: data.needsClarification
+      });
+    } catch {
+      addMessage({
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.',
+        isError: true
+      });
+      setAvatarState('idle');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="flex-1 overflow-y-auto px-4 py-6">
@@ -57,11 +86,9 @@ export function ChatArea() {
                   {msg.suggestedFollowUps.map((followUp, idx) => (
                     <button
                       key={idx}
-                      onClick={() => {
-                        const chatStore = useChatStore.getState();
-                        chatStore.addMessage({ role: 'user', content: followUp });
-                      }}
-                      className="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm rounded-full hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer"
+                      onClick={() => handleFollowUp(followUp)}
+                      disabled={isLoading}
+                      className="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm rounded-full hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {followUp}
                     </button>
@@ -72,7 +99,7 @@ export function ChatArea() {
         ))}
 
         {isLoading && (
-          <div className="flex items-start gap-3 ml-0">
+          <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
               <div className="w-4 h-4 rounded-full bg-indigo-500 animate-pulse" />
             </div>
