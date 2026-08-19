@@ -16,16 +16,20 @@ const SCHOOL_START = new Date('2026-07-01');
 function generateSchoolDays() {
   const days = [];
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
   const cursor = new Date(SCHOOL_START);
-  cursor.setHours(0, 0, 0, 0);
 
-  while (cursor <= today) {
-    const dow = cursor.getDay(); // 0=Sun, 6=Sat
+  while (cursor.getFullYear() < today.getFullYear() ||
+         cursor.getMonth() < today.getMonth() ||
+         cursor.getDate() <= today.getDate()) {
+    const dow = cursor.getDay();
     if (dow !== 0 && dow !== 6) {
-      days.push(cursor.toISOString().split('T')[0]);
+      const y = cursor.getFullYear();
+      const mo = String(cursor.getMonth() + 1).padStart(2, '0');
+      const da = String(cursor.getDate()).padStart(2, '0');
+      days.push(`${y}-${mo}-${da}`);
     }
     cursor.setDate(cursor.getDate() + 1);
+    if (cursor > today) break;
   }
   return days;
 }
@@ -157,15 +161,15 @@ class AttendanceService {
    */
   static applyLeave(studentId, fromDate, toDate) {
     if (!attendanceRecords[studentId]) return;
-
-    const cursor = new Date(fromDate);
-    const end = new Date(toDate);
-
+    const cursor = new Date(fromDate + 'T00:00:00');
+    const end = new Date(toDate + 'T00:00:00');
     while (cursor <= end) {
       const dow = cursor.getDay();
       if (dow !== 0 && dow !== 6) {
-        const dateStr = cursor.toISOString().split('T')[0];
-        attendanceRecords[studentId][dateStr] = 'leave';
+        const y = cursor.getFullYear();
+        const m = String(cursor.getMonth() + 1).padStart(2, '0');
+        const d = String(cursor.getDate()).padStart(2, '0');
+        attendanceRecords[studentId][`${y}-${m}-${d}`] = 'leave';
       }
       cursor.setDate(cursor.getDate() + 1);
     }
