@@ -13,6 +13,9 @@ import { Meetings } from './pages/Meetings';
 import { Timetable } from './pages/Timetable';
 import { Marks } from './pages/Marks';
 import { MyDay } from './pages/MyDay';
+import { AITutor } from './pages/AITutor';
+import { TeacherCopilot } from './pages/TeacherCopilot';
+import { PrincipalIntelligence } from './pages/PrincipalIntelligence';
 import { Avatar } from './components/Avatar';
 import { useChatStore } from './store/chatStore';
 import { useAuthStore } from './store/authStore';
@@ -117,6 +120,9 @@ function App() {
             <Route path="/timetable" element={<Timetable />} />
             <Route path="/marks" element={<Marks />} />
             <Route path="/myday" element={<MyDay />} />
+            <Route path="/tutor" element={<AITutor />} />
+            <Route path="/copilot" element={<TeacherCopilot />} />
+            <Route path="/school-intel" element={<PrincipalIntelligence />} />
             <Route path="/admin" element={<AdminPanel />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />

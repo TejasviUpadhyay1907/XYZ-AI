@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Bot, LogOut, User, Users, GraduationCap, Briefcase,
   Globe, Activity, LayoutDashboard, Bell, FileText,
-  MessageCircle, Calendar, Award, Clock, Sun
+  MessageCircle, Calendar, Award, Clock, Sun, Sparkles, Brain
 } from 'lucide-react';
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
@@ -55,6 +55,9 @@ export function Header() {
   const navItems = token ? [
     { path: '/', icon: MessageCircle, label: 'Chat', show: true },
     { path: '/myday', icon: Sun, label: 'My Day', show: true },
+    { path: '/tutor', icon: Sparkles, label: 'AI Tutor', show: user?.role === 'student' },
+    { path: '/copilot', icon: Brain, label: 'Copilot', show: user?.role === 'teacher' },
+    { path: '/school-intel', icon: Activity, label: 'Intelligence', show: user?.role === 'principal' },
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', show: true },
     { path: '/timetable', icon: Clock, label: 'Timetable', show: user?.role === 'student' || user?.role === 'parent' || user?.role === 'teacher' },
     { path: '/marks', icon: Award, label: 'Marks', show: user?.role === 'student' || user?.role === 'parent' || user?.role === 'teacher' },
