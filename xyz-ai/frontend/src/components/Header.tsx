@@ -58,7 +58,7 @@ export function Header() {
     { path: '/timetable', icon: Clock, label: 'Timetable', show: user?.role === 'student' || user?.role === 'parent' || user?.role === 'teacher' },
     { path: '/marks', icon: Award, label: 'Marks', show: user?.role === 'student' || user?.role === 'parent' || user?.role === 'teacher' },
     { path: '/notices', icon: Bell, label: 'Notices', show: true },
-    { path: '/leaves', icon: FileText, label: 'Leaves', show: user?.role === 'parent' || user?.role === 'student' || user?.role === 'teacher' },
+    { path: '/leaves', icon: FileText, label: 'Leaves', show: user?.role === 'student' || user?.role === 'teacher' },
     { path: '/meetings', icon: Calendar, label: 'Meetings', show: user?.role === 'parent' || user?.role === 'teacher' },
     { path: '/admin', icon: Activity, label: 'Traces', show: user?.role === 'principal' },
   ] : [];

@@ -280,6 +280,10 @@ function executeTool(toolName, args, context) {
         reason
       });
 
+      // Apply leave to attendance records immediately (real-time reflection)
+      const AttendanceService = require('../../mockServices/attendanceService');
+      AttendanceService.applyLeave(studentId, start_date, end_date);
+
       return JSON.stringify({
         success: true,
         leave_id: leave.id,

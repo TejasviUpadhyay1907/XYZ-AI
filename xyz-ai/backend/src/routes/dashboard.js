@@ -20,7 +20,11 @@ router.get('/profile', (req, res) => {
       const profile = StudentService.getStudentProfile(id);
       const attendance = AttendanceService.getStudentAttendance(id);
       const percentage = attendance.total > 0 ? ((attendance.present / attendance.total) * 100).toFixed(1) : '0';
-      return res.json({ role, profile: profile || { name: req.user.name, id }, attendance: { ...attendance, percentage } });
+      return res.json({
+        role,
+        profile: profile || { name: req.user.name, id },
+        attendance: { ...attendance, percentage }
+      });
     }
 
     if (role === 'parent') {

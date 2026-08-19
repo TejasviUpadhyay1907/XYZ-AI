@@ -282,25 +282,27 @@ function QuickActions({ role, navigate }: { role: string; navigate: (path: strin
 // ============================================
 // ATTENDANCE HEATMAP CALENDAR
 // ============================================
-function AttendanceHeatmap({ recent }: { recent: { date: string; status: string }[] }) {
-  // Generate last 30 days
-  const days: { date: string; status: string | null; dayLabel: string }[] = [];
+function AttendanceHeatmap({ recent, allRecords }: { recent: { date: string; status: string }[]; allRecords?: Record<string, string> }) {
+  // Use allRecords if available (full history), otherwise fall back to recent array
+  const recordMap: Record<string, string> = allRecords || {};
+  if (!allRecords && recent) {
+    recent.forEach(r => { recordMap[r.date] = r.status; });
+  }
+
+  // Generate last 30 weekdays ending today
+  const days: { date: string; status: string | null; dayNum: string }[] = [];
   const today = new Date();
 
   for (let i = 29; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-    const match = recent?.find(r => r.date === dateStr);
     const dayOfWeek = d.getDay();
-
-    // Skip weekends
     if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-
+    const dateStr = d.toISOString().split('T')[0];
     days.push({
       date: dateStr,
-      status: match?.status || null,
-      dayLabel: d.toLocaleDateString('en', { day: 'numeric' })
+      status: recordMap[dateStr] || null,
+      dayNum: String(d.getDate())
     });
   }
 
@@ -318,17 +320,19 @@ function AttendanceHeatmap({ recent }: { recent: { date: string; status: string 
             className={`aspect-square rounded-md flex items-center justify-center text-xs font-medium cursor-default ${
               day.status === 'present' ? 'bg-green-400 text-white' :
               day.status === 'absent' ? 'bg-red-400 text-white' :
+              day.status === 'leave' ? 'bg-amber-300 text-white' :
               'bg-gray-100 text-gray-400'
             }`}
           >
-            {day.dayLabel}
+            {day.dayNum}
           </div>
         ))}
       </div>
       <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-400" /> Present</span>
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-400" /> Absent</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-gray-100" /> No data</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-300" /> Leave</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-gray-100" /> Holiday/No data</span>
       </div>
     </div>
   );
@@ -363,7 +367,7 @@ function StudentDashboard({ data, onRefresh: _onRefresh }: { data: any; onRefres
       </div>
 
       {/* Heatmap */}
-      <AttendanceHeatmap recent={attendance.recent || []} />
+      <AttendanceHeatmap recent={attendance.recent || []} allRecords={attendance.all_records} />
     </div>
   );
 }
@@ -396,7 +400,7 @@ function ParentDashboard({ data }: { data: any }) {
                 </div>
               </div>
             </div>
-            <AttendanceHeatmap recent={child.attendance.recent || []} />
+            <AttendanceHeatmap recent={child.attendance.recent || []} allRecords={child.attendance.all_records} />
           </div>
         );
       })}
