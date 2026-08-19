@@ -131,78 +131,90 @@ class VoiceServiceImpl implements VoiceService {
   }
 
   speakText(text: string, language: SupportedLanguage) {
-    if (!('speechSynthesis' in window)) {
-      console.warn('Speech synthesis not supported in this browser');
-      return;
-    }
+    if (typeof window === 'undefined') return;
 
-    window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
+    this.isSpeakingFlag = false;
 
     if (this.stateChangeCallback) {
       this.stateChangeCallback('speaking-start');
     }
 
-    const utterance = new SpeechSynthesisUtterance(text);
-
     // Full BCP-47 locale codes for each language
     const localeMap: Record<string, string> = {
-      en: 'en-IN',
-      hi: 'hi-IN',
-      ta: 'ta-IN',
-      te: 'te-IN',
-      mr: 'mr-IN',
-      bn: 'bn-IN',
-      gu: 'gu-IN',
-      pa: 'pa-IN',
-      kn: 'kn-IN',
-      ml: 'ml-IN',
-      ur: 'ur-PK',
+      en: 'en', hi: 'hi', ta: 'ta', te: 'te',
+      mr: 'mr', bn: 'bn', gu: 'gu', pa: 'pa',
+      kn: 'kn', ml: 'ml', ur: 'ur',
     };
 
-    const targetLocale = localeMap[language] || language;
-    utterance.lang = targetLocale;
+    const langCode = localeMap[language] || 'en';
 
-    // Smart voice selection: find the best available voice
-    const findBestVoice = () => {
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length === 0) return null;
+    // --- Strategy 1: Google Translate TTS (supports all Indian languages, no key) ---
+    const tryGoogleTTS = () => {
+      // Split long text into chunks (Google TTS max ~200 chars)
+      const chunks = splitTextIntoChunks(text, 180);
+      let chunkIndex = 0;
 
-      const langCode = language.toLowerCase();
-      const locale = targetLocale.toLowerCase();
-
-      // Priority 1: exact locale match (e.g. hi-IN)
-      let voice = voices.find(v => v.lang.toLowerCase() === locale);
-      if (voice) return voice;
-
-      // Priority 2: language prefix match (e.g. hi-*)
-      voice = voices.find(v => v.lang.toLowerCase().startsWith(langCode + '-'));
-      if (voice) return voice;
-
-      // Priority 3: language code contains match
-      voice = voices.find(v => v.lang.toLowerCase().includes(langCode));
-      if (voice) return voice;
-
-      // Priority 4: fallback to en-IN or en-US if language not available
-      voice = voices.find(v => v.lang.toLowerCase().startsWith('en-in'))
-        || voices.find(v => v.lang.toLowerCase().startsWith('en'));
-
-      return voice || null;
-    };
-
-    const speakWithVoice = () => {
-      const voice = findBestVoice();
-      if (voice) {
-        utterance.voice = voice;
-        // If we had to fall back to English for unsupported language, keep the lang code
-        // so at least the text display is correct
-        if (voice.lang.toLowerCase().startsWith('en') && !language.startsWith('en')) {
-          console.info(`[Voice] No ${language} voice found. Using ${voice.name} (${voice.lang})`);
+      const playNextChunk = () => {
+        if (chunkIndex >= chunks.length) {
+          this.isSpeakingFlag = false;
+          if (this.stateChangeCallback) this.stateChangeCallback('speaking-end');
+          return;
         }
+
+        const chunk = chunks[chunkIndex++];
+        const encoded = encodeURIComponent(chunk);
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=${langCode}&client=tw-ob`;
+
+        const audio = new Audio(url);
+        audio.volume = 1.0;
+
+        audio.onended = () => playNextChunk();
+        audio.onerror = () => {
+          // Google TTS failed (CORS/rate limit) — fall back to Web Speech API
+          console.warn('[Voice] Google TTS unavailable, falling back to Web Speech API');
+          tryWebSpeechAPI();
+        };
+
+        audio.play().catch(() => {
+          tryWebSpeechAPI();
+        });
+      };
+
+      playNextChunk();
+    };
+
+    // --- Strategy 2: Web Speech API fallback ---
+    const tryWebSpeechAPI = () => {
+      if (!('speechSynthesis' in window)) {
+        this.isSpeakingFlag = false;
+        if (this.stateChangeCallback) this.stateChangeCallback('speaking-end');
+        return;
       }
 
-      utterance.rate = 0.9;   // Slightly slower for clarity
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
+      const sttLocaleMap: Record<string, string> = {
+        en: 'en-IN', hi: 'hi-IN', ta: 'ta-IN', te: 'te-IN',
+        mr: 'mr-IN', bn: 'bn-IN', gu: 'gu-IN', pa: 'pa-IN',
+        kn: 'kn-IN', ml: 'ml-IN', ur: 'ur-PK',
+      };
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = sttLocaleMap[language] || 'en-IN';
+      utterance.rate = 0.9;
+
+      // Find best available voice
+      const voices = window.speechSynthesis.getVoices();
+      const targetLang = language.toLowerCase();
+      const targetLocale = (sttLocaleMap[language] || '').toLowerCase();
+
+      const voice =
+        voices.find(v => v.lang.toLowerCase() === targetLocale) ||
+        voices.find(v => v.lang.toLowerCase().startsWith(targetLang + '-')) ||
+        voices.find(v => v.lang.toLowerCase().includes(targetLang)) ||
+        voices.find(v => v.lang.toLowerCase().startsWith('en-in')) ||
+        voices.find(v => v.lang.toLowerCase().startsWith('en'));
+
+      if (voice) utterance.voice = voice;
 
       utterance.onend = () => {
         this.isSpeakingFlag = false;
@@ -214,25 +226,18 @@ class VoiceServiceImpl implements VoiceService {
       };
 
       window.speechSynthesis.speak(utterance);
-      this.isSpeakingFlag = true;
+      this.synthesis = utterance;
     };
 
-    // Voices may not be loaded yet — wait for them
-    const voices = window.speechSynthesis.getVoices();
-    if (voices.length > 0) {
-      speakWithVoice();
-    } else {
-      window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.onvoiceschanged = null;
-        speakWithVoice();
-      };
-      // Safety timeout: if voices never load, try anyway
-      setTimeout(() => {
-        if (!this.isSpeakingFlag) speakWithVoice();
-      }, 500);
-    }
+    this.isSpeakingFlag = true;
 
-    this.synthesis = utterance;
+    // Try Google TTS first (better quality, all languages)
+    tryGoogleTTS();
+  }
+
+  stopSpeaking() {
+    window.speechSynthesis?.cancel();
+    this.isSpeakingFlag = false;
   }
 
   get isListening(): boolean {
@@ -246,6 +251,39 @@ class VoiceServiceImpl implements VoiceService {
   setStateChangeCallback(callback: ((event: string) => void) | null) {
     this.stateChangeCallback = callback;
   }
+}
+
+// Helper: split long text into chunks for Google TTS (max ~200 chars per request)
+function splitTextIntoChunks(text: string, maxLen: number): string[] {
+  const chunks: string[] = [];
+  // Split on sentence boundaries first, then by length
+  const sentences = text.match(/[^.!?\n]+[.!?\n]*/g) || [text];
+
+  let current = '';
+  for (const sentence of sentences) {
+    if ((current + sentence).length <= maxLen) {
+      current += sentence;
+    } else {
+      if (current.trim()) chunks.push(current.trim());
+      // If single sentence is too long, split by words
+      if (sentence.length > maxLen) {
+        const words = sentence.split(' ');
+        current = '';
+        for (const word of words) {
+          if ((current + ' ' + word).length <= maxLen) {
+            current += (current ? ' ' : '') + word;
+          } else {
+            if (current.trim()) chunks.push(current.trim());
+            current = word;
+          }
+        }
+      } else {
+        current = sentence;
+      }
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks.filter(c => c.length > 0);
 }
 
 // Export a singleton instance
