@@ -149,9 +149,8 @@ class VoiceServiceImpl implements VoiceService {
 
     const langCode = localeMap[language] || 'en';
 
-    // --- Strategy 1: Google Translate TTS (supports all Indian languages, no key) ---
+    // --- Strategy 1: Backend TTS Proxy → Google Translate (bypasses CORS, all Indian languages) ---
     const tryGoogleTTS = () => {
-      // Split long text into chunks (Google TTS max ~200 chars)
       const chunks = splitTextIntoChunks(text, 180);
       let chunkIndex = 0;
 
@@ -163,20 +162,20 @@ class VoiceServiceImpl implements VoiceService {
         }
 
         const chunk = chunks[chunkIndex++];
-        const encoded = encodeURIComponent(chunk);
-        const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=${langCode}&client=tw-ob`;
+        // Use our backend proxy to avoid CORS issues
+        const proxyUrl = `/api/tts?text=${encodeURIComponent(chunk)}&lang=${langCode}`;
 
-        const audio = new Audio(url);
+        const audio = new Audio(proxyUrl);
         audio.volume = 1.0;
 
         audio.onended = () => playNextChunk();
-        audio.onerror = () => {
-          // Google TTS failed (CORS/rate limit) — fall back to Web Speech API
-          console.warn('[Voice] Google TTS unavailable, falling back to Web Speech API');
+        audio.onerror = (e) => {
+          console.warn('[Voice] Proxy TTS failed, falling back to Web Speech API', e);
           tryWebSpeechAPI();
         };
 
-        audio.play().catch(() => {
+        audio.play().catch((e) => {
+          console.warn('[Voice] Audio play() failed:', e);
           tryWebSpeechAPI();
         });
       };

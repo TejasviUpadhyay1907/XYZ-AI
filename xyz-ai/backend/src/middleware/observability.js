@@ -69,8 +69,11 @@ function observabilityMiddleware(req, res, next) {
       status_code: res.statusCode,
       duration_ms: duration
     });
-    res.setHeader('X-Request-Id', requestId);
-    res.setHeader('X-Response-Time', `${duration}ms`);
+    // Only set headers if they haven't been sent yet (streaming responses)
+    if (!res.headersSent) {
+      res.setHeader('X-Request-Id', requestId);
+      res.setHeader('X-Response-Time', `${duration}ms`);
+    }
     originalEnd.apply(this, args);
   };
 

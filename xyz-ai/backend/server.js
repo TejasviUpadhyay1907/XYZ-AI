@@ -38,9 +38,13 @@ const authRoutes = require('./src/routes/auth');
 const { adminRouter } = require('./src/routes/admin');
 const dashboardRoutes = require('./src/routes/dashboard');
 const notificationRoutes = require('./src/routes/notifications');
+const ttsRoutes = require('./src/routes/tts');
 
 // Serve static files from the React frontend build
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// TTS proxy - NO auth required (public endpoint for audio streaming)
+app.use('/api/tts', ttsRoutes);
 
 // Auth routes (unprotected)
 app.use('/api/auth', authRoutes);
