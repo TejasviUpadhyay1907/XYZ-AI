@@ -256,7 +256,7 @@ export function AITutor() {
                     {msg.role === 'tutor' && (
                       <div className="flex items-center gap-1.5 mb-2">
                         <Sparkles className="w-3 h-3 text-indigo-500" />
-                        <span className="text-xs font-medium text-indigo-600">XYZ Tutor</span>
+                        <span className="text-xs font-medium text-indigo-600">Eduvia Tutor</span>
                       </div>
                     )}
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>

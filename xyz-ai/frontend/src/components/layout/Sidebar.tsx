@@ -34,7 +34,7 @@ export function Sidebar() {
               <GraduationCap className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-800">XYZ AI</h3>
+              <h3 className="text-sm font-semibold text-gray-800">Eduvia AI</h3>
               <p className="text-xs text-gray-500">School Assistant</p>
             </div>
           </div>

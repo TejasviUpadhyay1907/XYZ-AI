@@ -196,7 +196,7 @@ export function Dashboard() {
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
-              Ask XYZ AI
+              Ask Eduvia AI
             </button>
           </div>
         </div>

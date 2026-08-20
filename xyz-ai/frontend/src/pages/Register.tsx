@@ -64,7 +64,7 @@ export function Register() {
             <Bot className="w-9 h-9 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800">Create your account</h2>
-          <p className="text-sm text-gray-500 mt-1">Join XYZ AI School Operating System</p>
+          <p className="text-sm text-gray-500 mt-1">Join Eduvia AI School Operating System</p>
         </div>
 
         {/* Form */}

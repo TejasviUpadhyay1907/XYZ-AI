@@ -1,4 +1,4 @@
-// Language Service for XYZ AI School Assistant
+// Language Service for Eduvia AI School Assistant
 // Supports 11 languages: English, Hindi, Tamil, Telugu, Marathi, Bengali, Gujarati, Punjabi, Kannada, Malayalam, Urdu
 
 export type SupportedLanguage =

@@ -8,13 +8,13 @@ import {
 import { Navigate } from 'react-router-dom';
 
 const FEATURES = [
-  { icon: MessageCircle, title: 'Natural Language Chat', desc: 'Ask anything in plain language — no menus, no forms. XYZ AI understands and acts.', color: 'bg-indigo-50 text-indigo-600' },
+  { icon: MessageCircle, title: 'Natural Language Chat', desc: 'Ask anything in plain language — no menus, no forms. Eduvia AI understands and acts.', color: 'bg-indigo-50 text-indigo-600' },
   { icon: Sparkles, title: 'AI Study Tutor', desc: 'Personal tutor that explains, gives examples, quizzes students, and adapts to their level.', color: 'bg-purple-50 text-purple-600' },
   { icon: Brain, title: 'Teacher Copilot', desc: 'AI-powered risk analysis — instantly see which students need attention and why.', color: 'bg-blue-50 text-blue-600' },
   { icon: BarChart2, title: 'Principal Intelligence', desc: 'Real-time school health briefing with trends, recommendations, and AI insights.', color: 'bg-green-50 text-green-600' },
   { icon: BookOpen, title: 'School Knowledge (RAG)', desc: 'Ask questions about school policies and get grounded answers from official documents.', color: 'bg-amber-50 text-amber-600' },
   { icon: Mic, title: 'Voice in 11 Languages', desc: 'Speak in Hindi, Tamil, Telugu, Marathi, or 7 more Indian languages. AI responds in kind.', color: 'bg-rose-50 text-rose-600' },
-  { icon: Bell, title: 'Proactive AI Alerts', desc: 'XYZ AI notices when attendance drops, exams are near, or action is needed — and tells you.', color: 'bg-orange-50 text-orange-600' },
+  { icon: Bell, title: 'Proactive AI Alerts', desc: 'Eduvia AI notices when attendance drops, exams are near, or action is needed — and tells you.', color: 'bg-orange-50 text-orange-600' },
   { icon: Shield, title: 'Secure & Role-Aware', desc: 'Authorization at the application layer. The AI cannot bypass permissions — ever.', color: 'bg-red-50 text-red-600' },
   { icon: Globe, title: 'Real-time Sync', desc: 'Teacher marks attendance → student dashboard updates in seconds. Everything is live.', color: 'bg-teal-50 text-teal-600' },
 ];
@@ -84,7 +84,7 @@ export function Landing() {
             <div className="bg-indigo-600 p-1.5 rounded-lg">
               <Bot className="w-5 h-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-gray-800">XYZ AI</span>
+            <span className="text-lg font-bold text-gray-800">Eduvia AI</span>
             <span className="text-xs text-gray-400 hidden sm:block">School Intelligence Platform</span>
           </div>
           <div className="flex items-center gap-3">
@@ -118,7 +118,7 @@ export function Landing() {
           </h1>
 
           <p className="text-lg md:text-xl text-indigo-200 mb-10 max-w-2xl mx-auto leading-relaxed">
-            XYZ AI understands your role, remembers your conversations, calls real school APIs,
+            Eduvia AI understands your role, remembers your conversations, calls real school APIs,
             teaches students, and briefs teachers and principals — all through natural conversation.
           </p>
 
@@ -175,7 +175,7 @@ export function Landing() {
               Everything a school needs. One AI interface.
             </h2>
             <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-              No more 50 menus. No more ERP screens. Just ask XYZ AI what you need.
+              No more 50 menus. No more ERP screens. Just ask Eduvia AI what you need.
             </p>
           </div>
 
@@ -201,7 +201,7 @@ export function Landing() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">10 Demo Scenarios</h2>
-            <p className="text-gray-500">These scenarios demonstrate the full power of XYZ AI's architecture</p>
+            <p className="text-gray-500">These scenarios demonstrate the full power of Eduvia AI's architecture</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -280,7 +280,7 @@ export function Landing() {
       {/* CTA */}
       <section className="bg-gradient-to-r from-indigo-600 to-purple-600 py-20 px-6 text-white text-center">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold mb-4">Try XYZ AI now</h2>
+          <h2 className="text-3xl font-bold mb-4">Try Eduvia AI now</h2>
           <p className="text-indigo-200 mb-8 text-lg">
             4 demo accounts ready. No setup required. Experience all 10 demo scenarios.
           </p>
@@ -302,7 +302,7 @@ export function Landing() {
       <footer className="bg-gray-900 text-gray-400 py-8 px-6 text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Bot className="w-4 h-4 text-indigo-400" />
-          <span className="text-white font-semibold">XYZ AI</span>
+          <span className="text-white font-semibold">Eduvia AI</span>
           <span className="text-gray-500">— School Intelligence Platform</span>
         </div>
         <p className="text-sm">Built with React · Node.js · Llama 3.3 · 11 Indian Languages · Real-time · Secure</p>

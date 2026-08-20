@@ -29,7 +29,7 @@ export function ModernLayout() {
           {/* Avatar Container (for mobile or as supplementary element) */}
           <div className="md:hidden flex items-center justify-center py-4 bg-white border-t border-gray-100">
             <Avatar state={avatarState} size={56} />
-            <span className="ml-3 text-sm font-medium text-gray-700">XYZ AI</span>
+            <span className="ml-3 text-sm font-medium text-gray-700">Eduvia AI</span>
           </div>
 
           {/* Main Content Area */}

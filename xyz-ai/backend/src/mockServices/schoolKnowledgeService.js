@@ -14,7 +14,7 @@ const SCHOOL_DOCUMENTS = [
     category: 'Policy',
     last_updated: '2026-06-01',
     content: `
-XYZ SCHOOL — STUDENT ATTENDANCE POLICY
+Eduvia School — STUDENT ATTENDANCE POLICY
 
 1. MINIMUM ATTENDANCE REQUIREMENT
 Students must maintain a minimum of 75% attendance in each subject to be eligible for examinations.
@@ -59,7 +59,7 @@ Contact number for absence notification: +91-XXXX-XXXXXX
     category: 'Academics',
     last_updated: '2026-06-15',
     content: `
-XYZ SCHOOL — EXAMINATION RULES AND GUIDELINES
+Eduvia School — EXAMINATION RULES AND GUIDELINES
 
 1. EXAMINATION SCHEDULE
 Half-Yearly Examinations: October 1-15, 2026
@@ -111,7 +111,7 @@ Below 33: F (Fail)
     category: 'General',
     last_updated: '2026-06-01',
     content: `
-XYZ SCHOOL — STUDENT HANDBOOK 2026-27
+Eduvia School — STUDENT HANDBOOK 2026-27
 
 SCHOOL TIMINGS
 School begins at 8:00 AM. Gates close at 8:15 AM.
@@ -165,7 +165,7 @@ Parents should sign the homework diary daily.
     category: 'Calendar',
     last_updated: '2026-05-01',
     content: `
-XYZ SCHOOL — HOLIDAY CALENDAR 2026-27
+Eduvia School — HOLIDAY CALENDAR 2026-27
 
 SUMMER VACATION
 May 1 – June 30, 2026 (School reopens July 1, 2026)
@@ -215,7 +215,7 @@ April 30, 2027
     category: 'Finance',
     last_updated: '2026-04-01',
     content: `
-XYZ SCHOOL — FEE STRUCTURE 2026-27
+Eduvia School — FEE STRUCTURE 2026-27
 
 TUITION FEES
 Grades 9-10: Rs. 12,000 per month
@@ -234,7 +234,7 @@ Late payment fee: Rs. 200 per day after the 10th.
 
 PAYMENT MODES
 Online: School portal or bank transfer
-Cheque: Payable to "XYZ School"
+Cheque: Payable to "Eduvia School"
 Cash: School accounts office (Mon-Sat, 9 AM – 2 PM)
 
 FEE CONCESSION

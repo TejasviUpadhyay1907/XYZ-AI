@@ -1,5 +1,5 @@
 /**
- * Language Service for XYZ AI School Assistant (Backend)
+ * Language Service for Eduvia AI School Assistant (Backend)
  * Supports 11 languages: English, Hindi, Tamil, Telugu, Marathi, Bengali, Gujarati, Punjabi, Kannada, Malayalam, Urdu
  */
 

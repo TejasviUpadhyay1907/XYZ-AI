@@ -242,7 +242,7 @@ export function SchoolKnowledge() {
 
             {/* Ask AI about school knowledge */}
             <div className="mt-3 p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
-              <p className="text-xs text-indigo-700 font-medium mb-2">💡 Tip: Ask XYZ AI directly!</p>
+              <p className="text-xs text-indigo-700 font-medium mb-2">💡 Tip: Ask Eduvia AI directly!</p>
               <p className="text-xs text-gray-600 mb-2">You can ask questions like these in the chat and the AI will automatically search school documents:</p>
               <div className="flex flex-wrap gap-1">
                 {['What\'s the attendance policy?', 'When are PTM dates?', 'School timings?'].map(q => (

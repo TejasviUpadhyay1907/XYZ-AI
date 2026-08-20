@@ -29,7 +29,7 @@ router.get('/', (req, res) => {
         body: alert.message,
         icon: alert.icon,
         action: alert.action,
-        from: 'XYZ AI',
+        from: 'Eduvia AI',
         time: alert.created_at,
         read: false,
         is_proactive: true,

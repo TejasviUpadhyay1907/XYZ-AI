@@ -71,7 +71,7 @@ export function Login() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-4 shadow-lg">
             <Bot className="w-9 h-9 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800">Welcome to XYZ AI</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Welcome to Eduvia AI</h2>
           <p className="text-sm text-gray-500 mt-1">Intelligent School Operating System</p>
         </div>
 

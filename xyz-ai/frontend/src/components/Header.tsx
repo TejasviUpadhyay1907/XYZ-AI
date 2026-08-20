@@ -77,7 +77,7 @@ export function Header() {
             <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-800">XYZ AI</h1>
+            <h1 className="text-lg font-semibold text-gray-800">Eduvia AI</h1>
             <p className="text-xs text-gray-500 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
               {user ? `${user.name}` : 'School Assistant'}

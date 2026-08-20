@@ -61,7 +61,7 @@ export function Header() {
           <GraduationCap className="w-5 h-5 text-indigo-600" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-gray-800">XYZ AI</h2>
+          <h2 className="text-lg font-bold text-gray-800">Eduvia AI</h2>
           <p className="text-xs text-gray-500">School Assistant</p>
         </div>
       </div>

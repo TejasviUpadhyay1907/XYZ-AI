@@ -86,7 +86,7 @@ const welcomeMessages: Record<Role, Partial<Record<SupportedLanguage, string>>> 
 const getWelcomeMessage = (role: Role, language: SupportedLanguage): string => {
   return welcomeMessages[role]?.[language]
     || welcomeMessages[role]?.['en']
-    || "Hello! I'm XYZ AI. How can I help you today?";
+    || "Hello! I'm Eduvia AI. How can I help you today?";
 };
 
 export const useChatStore = create<ChatState>((set) => ({
