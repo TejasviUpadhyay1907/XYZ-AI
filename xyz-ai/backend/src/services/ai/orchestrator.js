@@ -282,7 +282,7 @@ function executeTool(toolName, args, context) {
       });
 
       // Apply leave to attendance records immediately (real-time reflection)
-      const AttendanceService = require('../../mockServices/attendanceService');
+      // AttendanceService already required at top of file
       AttendanceService.applyLeave(studentId, start_date, end_date);
 
       return JSON.stringify({
@@ -303,7 +303,8 @@ function executeTool(toolName, args, context) {
         return JSON.stringify({ error: 'Only teachers and principals can send notices.' });
       }
 
-      const senderName = role === 'principal' ? 'Dr. School Principal' : 'Ms. Priya Desai';
+      const senderNames = { teacher001: 'Ms. Priya Desai', teacher002: 'Mr. Amit Kumar', principal001: 'Dr. School Principal' };
+      const senderName = senderNames[userId] || (role === 'principal' ? 'Principal' : 'Class Teacher');
       const notice = NoticeService.sendNotice({
         title,
         content,
@@ -330,7 +331,8 @@ function executeTool(toolName, args, context) {
       }
 
       // Resolve who to meet with
-      let requestedWith = 'teacher001';
+      // Default: parent meets teacher, teacher meets first parent
+      let requestedWith = (role === 'parent') ? 'teacher001' : 'parent001';
       let requestedWithName = 'Ms. Priya Desai';
 
       if (role === 'teacher') {

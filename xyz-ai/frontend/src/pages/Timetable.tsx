@@ -42,6 +42,7 @@ export function Timetable() {
   const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [selectedDay, setSelectedDay] = useState<string>('');
   const [expandedSlot, setExpandedSlot] = useState<number | null>(null);
   const [selectedChild, setSelectedChild] = useState<string>('');
@@ -64,13 +65,14 @@ export function Timetable() {
       if (res.ok) {
         const d = await res.json();
         setData(d);
-        // For parent, select first child
         if (user?.role === 'parent' && d.children) {
           const firstChildId = Object.keys(d.children)[0];
           setSelectedChild(firstChildId);
         }
+      } else {
+        setError('Could not load timetable. Please try again.');
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { setError('Connection error. Please refresh.'); console.error(e); }
     finally { setLoading(false); }
   };
 
@@ -94,6 +96,15 @@ export function Timetable() {
   if (loading) return (
     <div className="flex-1 flex items-center justify-center">
       <p className="text-gray-400 animate-pulse">Loading timetable...</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="flex-1 flex items-center justify-center p-8">
+      <div className="text-center">
+        <p className="text-red-500 font-medium mb-2">⚠️ {error}</p>
+        <button onClick={fetchTimetable} className="text-sm text-indigo-600 hover:underline">Retry</button>
+      </div>
     </div>
   );
 

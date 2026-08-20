@@ -32,8 +32,10 @@ export function MyDay() {
         const d = await res.json();
         setData(d);
         if (d.children?.length > 0) setSelectedChild(d.children[0].id);
+      } else {
+        setData(null);
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { setData(null); console.error(e); }
     finally { setLoading(false); }
   };
 

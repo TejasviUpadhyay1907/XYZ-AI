@@ -16,13 +16,11 @@ export interface Message {
 interface ChatState {
   messages: Message[];
   currentRole: Role;
-  userId: string;
   isLoading: boolean;
   language: SupportedLanguage;
   avatarState: AvatarState;
   addMessage: (message: Message) => void;
   setRole: (role: Role) => void;
-  setUserId: (id: string) => void;
   setLanguage: (language: SupportedLanguage) => void;
   setLoading: (loading: boolean) => void;
   clearMessages: () => void;
@@ -94,7 +92,6 @@ const getWelcomeMessage = (role: Role, language: SupportedLanguage): string => {
 export const useChatStore = create<ChatState>((set) => ({
   messages: [{ role: 'assistant', content: getWelcomeMessage('student', 'en') }],
   currentRole: 'student',
-  userId: 'student123',
   language: 'en',
   isLoading: false,
   avatarState: 'idle',
@@ -103,7 +100,6 @@ export const useChatStore = create<ChatState>((set) => ({
     currentRole: role,
     messages: [{ role: 'assistant', content: getWelcomeMessage(role, state.language) }]
   })),
-  setUserId: (userId) => set({ userId }),
   setLanguage: (language) => set((state) => ({
     language,
     // Reset with welcome in new language so the user sees the language has changed

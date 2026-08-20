@@ -28,7 +28,8 @@ export function PrincipalIntelligence() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setData(await res.json());
-    } catch (e) { console.error(e); }
+      else setData({ error: true, ai_briefing: 'Could not load school health data. Please try again.', recommendations: [], trend: {}, school_analytics: {}, student_details: [], concern_areas: {} });
+    } catch (e) { setData({ error: true, ai_briefing: 'Connection error. Please refresh.', recommendations: [], trend: {}, school_analytics: {}, student_details: [], concern_areas: {} }); console.error(e); }
     finally { setLoading(false); }
   };
 

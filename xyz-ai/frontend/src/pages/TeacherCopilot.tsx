@@ -27,7 +27,8 @@ export function TeacherCopilot() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setData(await res.json());
-    } catch (e) { console.error(e); }
+      else setData({ error: true, copilot_message: 'Could not load student data. Please try again.', students: [], summary: {} });
+    } catch (e) { setData({ error: true, copilot_message: 'Connection error. Please refresh.', students: [], summary: {} }); console.error(e); }
     finally { setLoading(false); }
   };
 

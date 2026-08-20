@@ -10,11 +10,6 @@ const router = express.Router();
 const authService = require('../services/authService');
 const { authenticateToken } = require('../middleware/auth');
 
-// Test route to verify authRoutes is working
-router.get('/test', (req, res) => {
-  res.json({ message: 'Test route in authRoutes' });
-});
-
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {

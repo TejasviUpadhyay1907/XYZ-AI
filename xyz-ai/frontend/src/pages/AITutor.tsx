@@ -27,7 +27,7 @@ interface TutorMessage {
 }
 
 export function AITutor() {
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const { language } = useChatStore();
   const navigate = useNavigate();
   const [mode, setMode] = useState<TutorMode>('normal');
@@ -37,6 +37,7 @@ export function AITutor() {
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
+  const tutorSessionId = useRef(`tutor-${Date.now()}`);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,6 +49,8 @@ export function AITutor() {
     setTopic(topicToLearn);
     setSessionStarted(true);
     setMessages([]);
+    // Generate a stable session ID for this tutor topic (not per-message)
+    tutorSessionId.current = `tutor-${user?.id || 'anon'}-${Date.now()}`;
 
     const modeInstructions: Record<TutorMode, string> = {
       simple: 'Explain this in very simple language with everyday examples like you\'re teaching a 12-year-old. Use analogies. Keep it short and fun.',
@@ -71,14 +74,13 @@ export function AITutor() {
     }
 
     try {
-      // Build history context (kept for future use with multi-turn tutor)
-      void messages.slice(-6);
+      // History is maintained via stable session ID (tutorSessionId.current)
 
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          sessionId: `tutor-${Date.now()}`,
+          sessionId: tutorSessionId.current,
           language,
           message: isSystem
             ? message
@@ -130,6 +132,7 @@ export function AITutor() {
     setTopic('');
     setSessionStarted(false);
     setInput('');
+    tutorSessionId.current = `tutor-${user?.id || 'anon'}-${Date.now()}`;
     voiceService.stopSpeaking?.();
   };
 

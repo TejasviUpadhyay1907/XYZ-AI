@@ -70,6 +70,8 @@ export function Marks() {
         if (user?.role === 'parent' && d.children) {
           setSelectedChild(Object.keys(d.children)[0]);
         }
+      } else {
+        setData(null);
       }
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
@@ -103,6 +105,15 @@ export function Marks() {
   if (loading) return (
     <div className="flex-1 flex items-center justify-center">
       <p className="text-gray-400 animate-pulse">Loading marks...</p>
+    </div>
+  );
+
+  if (!data) return (
+    <div className="flex-1 flex items-center justify-center p-8">
+      <div className="text-center">
+        <p className="text-red-500 font-medium mb-2">⚠️ Could not load marks. Please try again.</p>
+        <button onClick={fetchMarks} className="text-sm text-indigo-600 hover:underline">Retry</button>
+      </div>
     </div>
   );
 
@@ -246,7 +257,7 @@ export function Marks() {
 
           {editMode && (
             <div className="space-y-3">
-              {['ct3', 'hy'].map(examId => {
+              {['ct1', 'ct2', 'ct3', 'hy'].map(examId => {
                 const examNames: Record<string, string> = { ct1: 'CT1 (max 25)', ct2: 'CT2 (max 25)', ct3: 'CT3 (max 25)', hy: 'Half Yearly (max 100)' };
                 const maxMarks: Record<string, number> = { ct1: 25, ct2: 25, ct3: 25, hy: 100 };
                 return (
@@ -350,10 +361,10 @@ export function Marks() {
             <div>
               <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <Award className="w-5 h-5 text-indigo-600" />
-                {user?.role === 'teacher' ? 'Class Marks' : 'My Marks'}
+                {user?.role === 'teacher' || user?.role === 'principal' ? 'Class Marks' : 'My Marks'}
               </h2>
               <p className="text-sm text-gray-500">
-                {user?.role === 'teacher' ? 'Enter and view class performance' : 'Academic performance & rankings'}
+                {user?.role === 'teacher' || user?.role === 'principal' ? 'View class performance' : 'Academic performance & rankings'}
               </p>
             </div>
           </div>
@@ -376,8 +387,8 @@ export function Marks() {
         {(user?.role === 'student') && data?.marks && renderStudentMarks(data.marks)}
         {user?.role === 'parent' && data?.children?.[selectedChild]?.marks && renderStudentMarks(data.children[selectedChild].marks)}
 
-        {/* Teacher view */}
-        {user?.role === 'teacher' && renderTeacherView()}
+        {/* Teacher / Principal view */}
+        {(user?.role === 'teacher' || user?.role === 'principal') && renderTeacherView()}
       </div>
     </div>
   );

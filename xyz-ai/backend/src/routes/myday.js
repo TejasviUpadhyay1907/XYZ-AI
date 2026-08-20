@@ -13,6 +13,13 @@ const TimetableService = require('../mockServices/timetableService');
 const NoticeService = require('../mockServices/noticeService');
 const LeaveService = require('../mockServices/leaveService');
 
+// Helper: days until a date string (negative if past)
+function daysUntil(dateStr) {
+  const target = new Date(dateStr);
+  const diff = target.getTime() - new Date().getTime();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
 // Helper: get current day name
 function getTodayName() {
   const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -150,11 +157,18 @@ router.get('/', (req, res) => {
           teacher: p.subject?.teacher,
           topic: p.subject?.topic,
         })),
-        homework_pending: 2, // mock — will be real when homework service is built
-        upcoming_exams: [
-          { subject: 'Physics', date: '2026-09-15', days_left: 26 },
-          { subject: 'Mathematics', date: '2026-09-18', days_left: 29 },
-        ],
+        homework_pending: 0, // No homework service — show 0 rather than fake data
+        upcoming_exams: (() => {
+          const exams = [
+            { subject: 'Class Test 3', date: '2026-09-10' },
+            { subject: 'Half Yearly Exam', date: '2026-10-01' },
+            { subject: 'Final Exam', date: '2027-03-15' },
+          ];
+          return exams
+            .map(e => ({ ...e, days_left: daysUntil(e.date) }))
+            .filter(e => e.days_left >= 0)
+            .slice(0, 3);
+        })(),
         marks_summary: hyMarks ? {
           total: hyMarks.total_obtained,
           max: hyMarks.total_max,
@@ -210,9 +224,14 @@ router.get('/', (req, res) => {
         is_school_day: isSchoolDay,
         children: childrenData,
         unread_notices: unreadNotices.length,
-        upcoming_events: [
-          { title: 'Parent-Teacher Meeting', date: '2026-08-22', days_left: 3 },
-        ],
+        upcoming_events: (() => {
+          const events = [];
+          const ptmDays = daysUntil('2026-08-22');
+          if (ptmDays >= 0) events.push({ title: 'Parent-Teacher Meeting', date: '2026-08-22', days_left: ptmDays });
+          const sportsDays = daysUntil('2026-08-30');
+          if (sportsDays >= 0) events.push({ title: 'Annual Sports Day', date: '2026-08-30', days_left: sportsDays });
+          return events;
+        })(),
         ai_summary: `You have ${children.length} child${children.length > 1 ? 'ren' : ''} enrolled. ${
           childrenData.filter(c => c.alert).length > 0
             ? `⚠️ ${childrenData.filter(c => c.alert).length} child needs your attention.`
@@ -373,10 +392,13 @@ Leave Applications: ${leaves.length > 0 ? leaves.map(l => `${l.startDate}-${l.en
         class_size: hyMarks.class_size,
         grade: parseFloat(hyMarks.percentage) >= 90 ? 'A+' : parseFloat(hyMarks.percentage) >= 80 ? 'A' : parseFloat(hyMarks.percentage) >= 70 ? 'B+' : 'B',
       } : null,
-      upcoming: [
-        { title: 'Physics Class Test 3', date: '2026-09-10', type: 'exam' },
-        { title: 'Half Yearly Exam', date: '2026-10-01', type: 'exam' },
-      ],
+      upcoming: (() => {
+        const exams = [
+          { title: 'Physics Class Test 3', date: '2026-09-10', type: 'exam' },
+          { title: 'Half Yearly Exam', date: '2026-10-01', type: 'exam' },
+        ];
+        return exams.filter(e => daysUntil(e.date) >= 0);
+      })(),
       notices: notices.slice(0, 2).map(n => ({ title: n.title, date: n.createdAt })),
       leaves: leaves.map(l => ({ dates: `${l.startDate} to ${l.endDate}`, reason: l.reason, status: l.status })),
       ai_summary: `${profile?.name?.split(' ')[0]}'s overall performance this week is ${parseFloat(pct) >= 85 ? 'strong' : 'needs attention'}. ${

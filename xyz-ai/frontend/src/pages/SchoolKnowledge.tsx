@@ -50,6 +50,7 @@ export function SchoolKnowledge() {
     try {
       const res = await fetch('/api/knowledge/documents', { headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) setDocuments((await res.json()).documents || []);
+      else console.error('Failed to load documents');
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };

@@ -47,8 +47,10 @@ export function Meetings() {
       if (res.ok) {
         const data = await res.json();
         setMeetings(data.meetings || []);
+      } else {
+        showToastMsg('Could not load meetings. Please refresh.');
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { showToastMsg('Connection error.'); console.error(e); }
     finally { setLoading(false); }
   };
 
@@ -67,10 +69,15 @@ export function Meetings() {
         })
       });
       if (res.ok) {
-        showToastMsg('Meeting request submitted!');
-        setShowRequest(false);
-        setForm({ purpose: '', preferredDate: '', preferredTime: '' });
-        setTimeout(fetchMeetings, 1000);
+        const aiResponse = await res.json();
+        if (aiResponse.reply && !aiResponse.reply.toLowerCase().includes('error')) {
+          showToastMsg('Meeting request submitted!');
+          setShowRequest(false);
+          setForm({ purpose: '', preferredDate: '', preferredTime: '' });
+          setTimeout(fetchMeetings, 2000);
+        } else {
+          showToastMsg('Could not submit meeting request. Please try again.');
+        }
       }
     } catch (e) { console.error(e); }
     finally { setSubmitting(false); }

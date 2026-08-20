@@ -39,6 +39,8 @@ export function Notices() {
         const data = await res.json();
         setNotices(data.notices || []);
         setUnreadCount(data.unread_count || 0);
+      } else {
+        throw new Error('Failed');
       }
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
@@ -72,10 +74,18 @@ export function Notices() {
         })
       });
       if (res.ok) {
-        setSent(true);
-        setShowCompose(false);
-        setComposing({ title: '', content: '', target: 'all_parents' });
-        setTimeout(() => { setSent(false); fetchNotices(); }, 2000);
+        const aiResponse = await res.json();
+        // If AI successfully processed the leave action, refresh data
+        if (aiResponse.reply && !aiResponse.reply.toLowerCase().includes('error')) {
+          setSent(true);
+          setShowCompose(false);
+          setComposing({ title: '', content: '', target: 'all_parents' });
+          // Wait for AI tool to execute before refreshing
+          setTimeout(() => { setSent(false); fetchNotices(); }, 2000);
+        } else {
+          // AI couldn't process it — tell user
+          alert('Could not send notice. Please try again.');
+        }
       }
     } catch (e) { console.error(e); }
     finally { setSending(false); }
@@ -85,6 +95,7 @@ export function Notices() {
   const canSend = user?.role === 'teacher' || user?.role === 'principal';
 
   if (loading) return <div className="flex-1 flex items-center justify-center"><p className="text-gray-400 animate-pulse">Loading notices...</p></div>;
+  if (!notices.length && !loading) { /* show empty state below */ }
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">

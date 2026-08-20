@@ -47,8 +47,10 @@ export function LeaveTracker() {
       if (res.ok) {
         const data = await res.json();
         setLeaves(data.leaves || []);
+      } else {
+        showToast('Could not load leave applications. Please refresh.');
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { showToast('Connection error. Please refresh.'); console.error(e); }
     finally { setLoading(false); }
   };
 
@@ -67,10 +69,15 @@ export function LeaveTracker() {
         })
       });
       if (res.ok) {
-        showToast('Leave application submitted successfully!');
-        setShowApply(false);
-        setForm({ childName: '', startDate: '', endDate: '', reason: '' });
-        setTimeout(fetchLeaves, 1000);
+        const aiResponse = await res.json();
+        if (aiResponse.reply && !aiResponse.reply.toLowerCase().includes('error')) {
+          showToast('Leave application submitted successfully!');
+          setShowApply(false);
+          setForm({ childName: '', startDate: '', endDate: '', reason: '' });
+          setTimeout(fetchLeaves, 2000);
+        } else {
+          showToast('Could not submit leave. Please try again.');
+        }
       }
     } catch (e) { console.error(e); }
     finally { setSubmitting(false); }

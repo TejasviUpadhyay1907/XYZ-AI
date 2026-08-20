@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -38,7 +38,20 @@ export function Dashboard() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [markingStatus, setMarkingStatus] = useState<Record<string, string>>({});
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  // Close notification dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    if (showNotifications) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showNotifications]);
 
   useEffect(() => {
     if (token) {
@@ -66,6 +79,7 @@ export function Dashboard() {
       ]);
 
       if (dashRes.ok) setData(await dashRes.json());
+      else setError('Failed to load dashboard data. Please refresh.');
       if (notifRes.ok) {
         const nd = await notifRes.json();
         setNotifications(nd.notifications || []);
@@ -76,6 +90,7 @@ export function Dashboard() {
         setInsights(id.insights || []);
       }
     } catch (e) {
+      setError('Could not connect to server. Please check your connection.');
       console.error('Dashboard fetch error:', e);
     } finally {
       setLoading(false);
@@ -108,6 +123,17 @@ export function Dashboard() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="text-center">
+          <p className="text-red-500 font-medium mb-2">⚠️ {error}</p>
+          <button onClick={fetchAll} className="text-sm text-indigo-600 hover:underline">Retry</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
       <div className="max-w-6xl mx-auto">
@@ -124,7 +150,7 @@ export function Dashboard() {
           </div>
           <div className="flex items-center gap-2">
             {/* Notification Bell */}
-            <div className="relative">
+            <div className="relative" ref={notifRef}>
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"

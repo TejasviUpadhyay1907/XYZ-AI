@@ -63,7 +63,7 @@ export function Header() {
     { path: '/marks', icon: Award, label: 'Marks', show: user?.role === 'student' || user?.role === 'parent' || user?.role === 'teacher' },
     { path: '/knowledge', icon: BookOpen, label: 'Knowledge', show: true },
     { path: '/notices', icon: Bell, label: 'Notices', show: true },
-    { path: '/leaves', icon: FileText, label: 'Leaves', show: user?.role === 'student' || user?.role === 'teacher' },
+    { path: '/leaves', icon: FileText, label: 'Leaves', show: user?.role === 'student' || user?.role === 'parent' || user?.role === 'teacher' },
     { path: '/meetings', icon: Calendar, label: 'Meetings', show: user?.role === 'parent' || user?.role === 'teacher' },
     { path: '/admin', icon: Activity, label: 'Traces', show: user?.role === 'principal' },
   ] : [];
@@ -140,9 +140,9 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile Nav */}
+      {/* Mobile Nav — show only most important items for the role */}
       {token && (
-        <div className="md:hidden flex items-center gap-1 px-4 pb-2 overflow-x-auto">
+        <div className="md:hidden flex items-center gap-1 px-4 pb-2 overflow-x-auto scrollbar-hide">
           {navItems.filter(n => n.show).map(item => (
             <button
               key={item.path}
