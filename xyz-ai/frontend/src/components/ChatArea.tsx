@@ -55,7 +55,8 @@ export function ChatArea() {
         role: 'assistant',
         content: data.reply,
         suggestedFollowUps: data.suggestedFollowUps,
-        needsClarification: data.needsClarification
+        needsClarification: data.needsClarification,
+        ragSources: data.rag_sources,
       });
     } catch {
       addMessage({
@@ -78,6 +79,7 @@ export function ChatArea() {
               role={msg.role}
               content={msg.content}
               isError={msg.isError}
+              ragSources={msg.ragSources}
             />
             {msg.role === 'assistant' &&
               msg.suggestedFollowUps &&

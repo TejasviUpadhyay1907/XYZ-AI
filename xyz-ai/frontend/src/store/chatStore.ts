@@ -10,6 +10,7 @@ export interface Message {
   isError?: boolean;
   suggestedFollowUps?: string[];
   needsClarification?: boolean;
+  ragSources?: string[];
 }
 
 interface ChatState {

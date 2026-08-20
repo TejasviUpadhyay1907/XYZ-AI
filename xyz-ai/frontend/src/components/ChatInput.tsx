@@ -82,7 +82,8 @@ export function ChatInput() {
         role: 'assistant',
         content: data.reply,
         suggestedFollowUps: data.suggestedFollowUps,
-        needsClarification: data.needsClarification
+        needsClarification: data.needsClarification,
+        ragSources: data.rag_sources,
       });
     } catch (error) {
       addMessage({
@@ -136,7 +137,8 @@ export function ChatInput() {
                   role: 'assistant',
                   content: data.reply,
                   suggestedFollowUps: data.suggestedFollowUps,
-                  needsClarification: data.needsClarification
+                  needsClarification: data.needsClarification,
+                  ragSources: data.rag_sources,
                 });
               })
               .catch(() => {

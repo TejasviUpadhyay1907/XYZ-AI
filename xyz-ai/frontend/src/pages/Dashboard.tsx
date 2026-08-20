@@ -146,18 +146,16 @@ export function Dashboard() {
                   {notifications.length === 0 ? (
                     <div className="p-4 text-center text-sm text-gray-400">No notifications</div>
                   ) : (
-                    notifications.slice(0, 8).map(n => (
-                      <div key={n.id} className="px-3 py-2.5 border-b border-gray-50 hover:bg-gray-50">
+                    notifications.slice(0, 8).map((n: any) => (
+                      <div key={n.id}
+                        className={`px-3 py-2.5 border-b border-gray-50 hover:bg-gray-50 cursor-pointer ${n.priority === 'critical' ? 'bg-red-50' : ''}`}
+                        onClick={() => n.action?.path && navigate(n.action.path)}>
                         <div className="flex items-start gap-2">
-                          <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                            n.type === 'notice' ? 'bg-blue-500' :
-                            n.type === 'leave_request' ? 'bg-orange-500' :
-                            'bg-purple-500'
-                          }`} />
+                          <span className="text-base flex-shrink-0 mt-0.5">{n.icon || '🔔'}</span>
                           <div>
                             <p className="text-sm font-medium text-gray-700">{n.title}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">{n.body}</p>
-                            <p className="text-xs text-gray-400 mt-1">{new Date(n.time).toLocaleDateString()}</p>
+                            <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.body}</p>
+                            {n.action && <p className="text-xs text-indigo-600 mt-1 font-medium">{n.action.label} →</p>}
                           </div>
                         </div>
                       </div>

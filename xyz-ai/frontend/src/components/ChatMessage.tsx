@@ -1,9 +1,10 @@
-import { User, Bot, AlertCircle } from 'lucide-react';
+import { User, Bot, AlertCircle, BookOpen } from 'lucide-react';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
   content: string;
   isError?: boolean;
+  ragSources?: string[];
 }
 
 /**
@@ -81,7 +82,7 @@ function renderContent(content: string) {
   });
 }
 
-export function ChatMessage({ role, content, isError }: ChatMessageProps) {
+export function ChatMessage({ role, content, isError, ragSources }: ChatMessageProps) {
   return (
     <div className={`flex gap-3 ${role === 'user' ? 'flex-row-reverse' : ''}`}>
       {/* Avatar icon */}
@@ -97,20 +98,35 @@ export function ChatMessage({ role, content, isError }: ChatMessageProps) {
         )}
       </div>
 
-      {/* Message bubble */}
-      <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-        role === 'user'
-          ? 'bg-indigo-600 text-white rounded-tr-sm'
-          : isError
-            ? 'bg-red-50 border border-red-200 text-red-800 rounded-tl-sm'
-            : 'bg-white shadow-sm border border-gray-100 text-gray-800 rounded-tl-sm'
-      }`}>
-        <div className="text-[0.925rem] leading-relaxed">
-          {role === 'assistant' && !isError
-            ? renderContent(content)
-            : <p className="whitespace-pre-wrap">{content}</p>
-          }
+      {/* Message bubble + RAG sources */}
+      <div className="max-w-[80%] space-y-1">
+        <div className={`rounded-2xl px-4 py-3 ${
+          role === 'user'
+            ? 'bg-indigo-600 text-white rounded-tr-sm'
+            : isError
+              ? 'bg-red-50 border border-red-200 text-red-800 rounded-tl-sm'
+              : 'bg-white shadow-sm border border-gray-100 text-gray-800 rounded-tl-sm'
+        }`}>
+          <div className="text-[0.925rem] leading-relaxed">
+            {role === 'assistant' && !isError
+              ? renderContent(content)
+              : <p className="whitespace-pre-wrap">{content}</p>
+            }
+          </div>
         </div>
+
+        {/* RAG source attribution */}
+        {role === 'assistant' && ragSources && ragSources.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap ml-1">
+            <BookOpen className="w-3 h-3 text-gray-400" />
+            <span className="text-xs text-gray-400">From:</span>
+            {ragSources.map((src, i) => (
+              <span key={i} className="text-xs px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100">
+                {src}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

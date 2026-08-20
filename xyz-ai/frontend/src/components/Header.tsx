@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Bot, LogOut, User, Users, GraduationCap, Briefcase,
   Globe, Activity, LayoutDashboard, Bell, FileText,
-  MessageCircle, Calendar, Award, Clock, Sun, Sparkles, Brain
+  MessageCircle, Calendar, Award, Clock, Sun, Sparkles, Brain, BookOpen
 } from 'lucide-react';
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
@@ -61,6 +61,7 @@ export function Header() {
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', show: true },
     { path: '/timetable', icon: Clock, label: 'Timetable', show: user?.role === 'student' || user?.role === 'parent' || user?.role === 'teacher' },
     { path: '/marks', icon: Award, label: 'Marks', show: user?.role === 'student' || user?.role === 'parent' || user?.role === 'teacher' },
+    { path: '/knowledge', icon: BookOpen, label: 'Knowledge', show: true },
     { path: '/notices', icon: Bell, label: 'Notices', show: true },
     { path: '/leaves', icon: FileText, label: 'Leaves', show: user?.role === 'student' || user?.role === 'teacher' },
     { path: '/meetings', icon: Calendar, label: 'Meetings', show: user?.role === 'parent' || user?.role === 'teacher' },

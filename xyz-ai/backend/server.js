@@ -42,6 +42,7 @@ const ttsRoutes = require('./src/routes/tts');
 const academicRoutes = require('./src/routes/academic');
 const myDayRoutes = require('./src/routes/myday');
 const intelligenceRoutes = require('./src/routes/intelligence');
+const knowledgeRoutes = require('./src/routes/knowledge');
 
 // Serve static files from the React frontend build
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
@@ -67,8 +68,11 @@ app.use('/api/academic', authenticateToken, academicRoutes);
 // My Day routes
 app.use('/api/myday', authenticateToken, myDayRoutes);
 
-// Intelligence routes (teacher copilot, principal intel, AI tutor)
+// Intelligence routes
 app.use('/api/intelligence', authenticateToken, intelligenceRoutes);
+
+// School knowledge / RAG routes
+app.use('/api/knowledge', authenticateToken, knowledgeRoutes);
 
 // Authenticated API routes
 app.use('/api', authenticateToken, apiRoutes);

@@ -18,6 +18,7 @@ const LeaveService = require('../../mockServices/leaveService');
 const NoticeService = require('../../mockServices/noticeService');
 const MeetingService = require('../../mockServices/meetingService');
 const AuditService = require('../auditService');
+const SchoolKnowledgeService = require('../../mockServices/schoolKnowledgeService');
 
 /**
  * @typedef {Object} ChatInput
@@ -432,6 +433,23 @@ async function handleMessage(input, reqContext = {}) {
   ConversationService.addMessage(session.id, 'user', message);
   traceStep('context_loaded', { history_messages: history?.length || 0 });
 
+  // --- RAG: Inject school document context for policy/rule questions ---
+  let ragSources = [];
+  const isKnowledgeQuery = /policy|rule|regulation|holiday|fee|exam rule|handbook|uniform|minimum|eligib|allow|permit|fine|late|condon/i.test(message);
+  if (isKnowledgeQuery) {
+    const rag = SchoolKnowledgeService.buildRAGContext(message);
+    if (rag && rag.results.length > 0) {
+      ragSources = rag.sources;
+      // Replace last user message with context-injected version
+      const lastMsg = llmMessages.pop();
+      llmMessages.push({
+        role: 'user',
+        content: `${lastMsg.content}\n\n[SCHOOL POLICY CONTEXT - Answer using this, cite the source document:]\n${rag.context}`
+      });
+      traceStep('rag_injected', { sources: ragSources, chunks: rag.results.length });
+    }
+  }
+
   let reply = '';
   let suggestedFollowUps = [];
   let needsClarification = false;
@@ -528,6 +546,7 @@ async function handleMessage(input, reqContext = {}) {
     suggestedFollowUps,
     needsClarification,
     sessionId: session.id,
+    rag_sources: ragSources.length > 0 ? ragSources : undefined,
     trace
   };
 }

@@ -10,6 +10,7 @@ const LeaveService = require('../mockServices/leaveService');
 const MeetingService = require('../mockServices/meetingService');
 const AttendanceService = require('../mockServices/attendanceService');
 const StudentService = require('../mockServices/studentService');
+const { generateProactiveAlerts } = require('../services/proactiveEngine');
 
 // GET /api/notifications - Get all notifications for current user
 router.get('/', (req, res) => {
@@ -17,7 +18,25 @@ router.get('/', (req, res) => {
     const { id, role } = req.user;
     const notifications = [];
 
-    // Unread notices
+    // 1. Proactive AI alerts (highest priority)
+    const proactiveAlerts = generateProactiveAlerts(id, role);
+    proactiveAlerts.forEach(alert => {
+      notifications.push({
+        id: alert.id,
+        type: alert.type,
+        priority: alert.priority,
+        title: alert.title,
+        body: alert.message,
+        icon: alert.icon,
+        action: alert.action,
+        from: 'XYZ AI',
+        time: alert.created_at,
+        read: false,
+        is_proactive: true,
+      });
+    });
+
+    // 2. Unread notices
     const grade = role === 'student' ? '10th' : null;
     const notices = NoticeService.getNoticesForUser(id, role, grade);
     const unreadNotices = notices.filter(n => !n.readBy.includes(id));
