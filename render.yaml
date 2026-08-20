@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: eduvia-ai
+    runtime: node
+    rootDir: xyz-ai/backend
+    buildCommand: cd ../frontend && npm install && npm run build && cd ../backend && npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: OPENROUTER_API_KEY
+        sync: false
+    healthCheckPath: /api/auth/me
