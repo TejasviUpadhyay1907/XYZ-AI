@@ -6,7 +6,6 @@ import { PrivateRoute } from './components/PrivateRoute';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Landing } from './pages/Landing';
-import { DemoScenarios } from './pages/DemoScenarios';
 import { AdminPanel } from './pages/AdminPanel';
 import { Dashboard } from './pages/Dashboard';
 import { Notices } from './pages/Notices';
@@ -128,7 +127,6 @@ function App() {
         }>
           <Route path="/" element={<ChatLayout />} />
           <Route path="/myday" element={<MyDay />} />
-          <Route path="/demo" element={<DemoScenarios />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/timetable" element={<Timetable />} />
           <Route path="/marks" element={<Marks />} />
