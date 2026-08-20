@@ -5,6 +5,8 @@ import { ChatInput } from './components/ChatInput';
 import { PrivateRoute } from './components/PrivateRoute';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { Landing } from './pages/Landing';
+import { DemoScenarios } from './pages/DemoScenarios';
 import { AdminPanel } from './pages/AdminPanel';
 import { Dashboard } from './pages/Dashboard';
 import { Notices } from './pages/Notices';
@@ -88,7 +90,9 @@ function ChatLayout() {
           <Avatar state={avatarState} size={48} />
           <div>
             <p className="text-sm font-medium text-gray-700">XYZ AI Assistant</p>
-            <p className="text-xs text-green-600 flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" /> Online</p>
+            <p className="text-xs text-green-600 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" /> Online
+            </p>
           </div>
         </div>
 
@@ -107,29 +111,41 @@ function ChatLayout() {
 function App() {
   return (
     <BrowserRouter>
-      <div className="flex flex-col h-screen bg-gray-50">
-        <Header />
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route element={<PrivateRoute />}>
-            <Route path="/" element={<ChatLayout />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/notices" element={<Notices />} />
-            <Route path="/leaves" element={<LeaveTracker />} />
-            <Route path="/meetings" element={<Meetings />} />
-            <Route path="/timetable" element={<Timetable />} />
-            <Route path="/marks" element={<Marks />} />
-            <Route path="/myday" element={<MyDay />} />
-            <Route path="/tutor" element={<AITutor />} />
-            <Route path="/copilot" element={<TeacherCopilot />} />
-            <Route path="/school-intel" element={<PrincipalIntelligence />} />
-            <Route path="/knowledge" element={<SchoolKnowledge />} />
-            <Route path="/admin" element={<AdminPanel />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </div>
+      <Routes>
+        {/* Public — Landing page (no header/nav) */}
+        <Route path="/home" element={<Landing />} />
+
+        {/* Auth pages (no nav) */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* Authenticated app — full layout with header */}
+        <Route element={
+          <div className="flex flex-col h-screen bg-gray-50">
+            <Header />
+            <PrivateRoute />
+          </div>
+        }>
+          <Route path="/" element={<ChatLayout />} />
+          <Route path="/myday" element={<MyDay />} />
+          <Route path="/demo" element={<DemoScenarios />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/timetable" element={<Timetable />} />
+          <Route path="/marks" element={<Marks />} />
+          <Route path="/knowledge" element={<SchoolKnowledge />} />
+          <Route path="/notices" element={<Notices />} />
+          <Route path="/leaves" element={<LeaveTracker />} />
+          <Route path="/meetings" element={<Meetings />} />
+          <Route path="/tutor" element={<AITutor />} />
+          <Route path="/copilot" element={<TeacherCopilot />} />
+          <Route path="/school-intel" element={<PrincipalIntelligence />} />
+          <Route path="/admin" element={<AdminPanel />} />
+        </Route>
+
+        {/* Root — show Landing for unauthenticated users */}
+        <Route index element={<Landing />} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }
